@@ -10,6 +10,7 @@ export default function DocumentPanel({
   cv, mode, onMode, content, limits, busy, dirty, onChange, onSave,
 }) {
   const [showTemplates, setShowTemplates] = useState(false)
+  const [inspectorOpen, setInspectorOpen] = useState(false)
   const [processingPhoto, setProcessingPhoto] = useState(false)
   const pdf = useCvPdf(cv, dirty ? content : null, mode === 'pdf')
   const filename = pdfFilename((dirty ? content : cv.content).document_title ?? cv.title, dirty)
@@ -34,6 +35,11 @@ export default function DocumentPanel({
         <div className="document-actions">
           <button type="button" className="button button-small" aria-expanded={showTemplates}
             disabled={busy || processingPhoto} onClick={() => setShowTemplates(!showTemplates)}>Template</button>
+          <button type="button" className="button button-small" aria-expanded={mode === 'edit' && inspectorOpen}
+            disabled={busy} onClick={() => {
+              setInspectorOpen(mode !== 'edit' || !inspectorOpen)
+              onMode('edit')
+            }}>Personalizza</button>
           <button type="button" className="button button-small button-primary"
             onClick={onSave} disabled={busy || processingPhoto || !dirty || !valid}>Salva</button>
           {pdf.url
@@ -61,7 +67,9 @@ export default function DocumentPanel({
         onClose={() => setShowTemplates(false)} />}
       {mode === 'edit'
         ? <VisualEditor title={cv.title} content={content} limits={limits} busy={busy} onChange={onChange}
-          onPhotoProcessing={setProcessingPhoto} />
+          onPhotoProcessing={setProcessingPhoto}
+          inspectorOpen={inspectorOpen} onShowInspector={() => setInspectorOpen(true)}
+          onCloseInspector={() => setInspectorOpen(false)} />
         : <PdfPreview pdf={pdf} filename={filename} draft={dirty} />}
     </section>
   )

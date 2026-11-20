@@ -27,7 +27,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 13 Presentazione negli snapshot
 - [x] 14 Famiglie e galleria dei template
 - [x] 15 Editing direttamente sul documento
-- [ ] 16 Personalizzazione e riquadri
+- [x] 16 Personalizzazione e riquadri
 - [ ] 17 Bozza e Undo/Redo
 - [ ] 18 Coordinamento fra editor e AI
 - [ ] 19 Completamento dell’interfaccia
@@ -50,3 +50,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **13** — Presentazione nel JSON degli snapshot, con Classic Roma come unico preset. Riusata la validazione del riferimento e preservata la compatibilità con i documenti senza design. Verifica: 55 test Flask, compresi salvataggio, ripristino, valori respinti e accettazione AI che conserva lo stile. Build Vite riuscita. Prossimo passo: Famiglie e galleria.
 - **14** — Galleria di 24 preset in sei famiglie. Riusati configurazioni, composizioni, miniature del renderer e dati dimostrativi del riferimento. La scelta su un CV vuoto prepara una bozza; sui CV già compilati applica lo stile. Verifica: 56 test Flask, due test Node e build Vite. In Chrome a 1440 e 390 px verificati filtri, ritratto, anteprima PDF di bozza senza scritture, salvataggio e cambio di template con contenuto invariato. Prossimo passo: Editing sul documento.
 - **15** — Titoli, testo multilinea, dettagli e foto modificabili direttamente sulla pagina A4. Riusati il componente del documento e il ridimensionamento preventivo delle immagini del riferimento. Verifica in Chrome con database isolato del focus, delle righe, dei caratteri accentati e della persistenza degli ID. Build Vite. Prossimo passo: Personalizzazione e dimensioni dei riquadri.
+- **16** — Controlli contestuali per colori, tipografia, pagina e riquadri. Maniglie utilizzabili con puntatore e tastiera, larghezza vincolata alla colonna e altezza minima. Verifica in Chrome di ridimensionamento, testo intero, valori limite, riordino e persistenza. Due test frontend e build Vite. Prossimo passo: Undo e Redo della bozza.
