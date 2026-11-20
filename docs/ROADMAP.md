@@ -18,7 +18,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 04 API dei curriculum
 - [x] 05 Frontend iniziale
 - [x] 06 Sezioni e modifica manuale
-- [ ] 07 Versionamento
+- [x] 07 Versionamento
 - [ ] 08 Chat in modalità simulata
 - [ ] 09 Proposte e approvazione
 - [ ] 10 OpenRouter
@@ -41,3 +41,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **04** — CRUD con archivio persistente, versione iniziale e esempio idempotente. Riusate le query e i limiti del riferimento. Verifica: Creazione, riavvio, rinomina, cancellazione, input e ID invalidi. Prossimo passo: Archivio React e proxy Vite.
 - **05** — Archivio React con Fetch, creazione, apertura, rinomina e cancellazione. Riusati la vista archivio e i controlli condivisi. Verifica: Build Vite e creazione/riapertura in Chrome attraverso le porte 5174 e 5001. Prossimo passo: Modifica e ordinamento delle sezioni.
 - **06** — Editor delle sezioni con ID stabili, riordino e salvataggio atomico. Riusati il controllo di versione e il salvataggio del riferimento. Verifica: sette test backend, build Vite e modifica, riordino e rimozione in Chrome con database temporaneo. Prossimo passo: cronologia e ripristino.
+- **07** — Cronologia confrontabile e ripristino con nuova versione. Riusati il dialogo e il servizio degli snapshot. Verifica: nove test backend, inclusi conflitti e immutabilità, build Vite e confronto e ripristino in Chrome con database temporaneo. Prossimo passo: chat in modalità simulata.

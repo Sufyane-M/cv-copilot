@@ -117,6 +117,19 @@ def register_routes(app: Flask) -> None:
         payload = body({'expected_version', 'content'})
         return cv_service.save_content(cv_id, validation.version_number(payload['expected_version']), validation.content(payload['content']))
 
+    @app.get('/api/cvs/<int:cv_id>/versions')
+    def list_versions(cv_id):
+        return jsonify(cv_service.list_versions(cv_id))
+
+    @app.get('/api/cvs/<int:cv_id>/versions/<int:number>')
+    def read_version(cv_id, number):
+        return cv_service.find_version(cv_id, number)
+
+    @app.post('/api/cvs/<int:cv_id>/versions/<int:number>/restore')
+    def restore_version(cv_id, number):
+        payload = body({'expected_version'})
+        return cv_service.restore_version(cv_id, number, validation.version_number(payload['expected_version']))
+
     @app.get('/api/config')
     def get_config():
         return {'llm_mode': 'mock', 'llm_configured': True, 'limits': {

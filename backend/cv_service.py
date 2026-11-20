@@ -100,3 +100,37 @@ def save_content(cv_id: int, expected_version: int, content: dict) -> dict:
             return cv
         insert_version(cv_id, expected_version + 1, content, 'manual')
         return get_cv(cv_id)
+
+
+def list_versions(cv_id: int) -> list:
+    connection = get_db()
+    with transaction(connection):
+        get_cv(cv_id)
+        rows = connection.execute('''
+            SELECT number, origin, created_at, restored_from_number
+            FROM cv_version WHERE cv_id = ? ORDER BY number DESC
+        ''', (cv_id,))
+        return [dict(row) for row in rows]
+
+
+def find_version(cv_id: int, number: int) -> dict:
+    row = get_db().execute('''
+        SELECT number, origin, created_at, restored_from_number, content_json
+        FROM cv_version WHERE cv_id = ? AND number = ?
+    ''', (cv_id, number)).fetchone()
+    if row is None:
+        raise ApiError('version_not_found', 'Questa versione del CV non esiste.', 404)
+    version = dict(row)
+    version['content'] = json.loads(version.pop('content_json'))
+    return version
+
+
+def restore_version(cv_id: int, number: int, expected_version: int) -> dict:
+    with transaction(get_db(), write=True):
+        cv = get_cv(cv_id)
+        require_expected_version(cv, expected_version)
+        version = find_version(cv_id, number)
+        if number == expected_version:
+            raise ApiError('invalid_restore', 'Scegli una versione precedente da ripristinare.')
+        insert_version(cv_id, expected_version + 1, version['content'], 'restore', number)
+        return get_cv(cv_id)

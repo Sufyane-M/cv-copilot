@@ -1,0 +1,70 @@
+.workspace-dialog {
+  width: min(48rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: .85rem;
+  box-shadow: 0 20px 70px #16282336;
+}
+
+.workspace-dialog-wide { width: min(62rem, calc(100vw - 2rem)); }
+.workspace-dialog::backdrop { background: #202d2a66; }
+.dialog-shell { display: flex; flex-direction: column; max-height: min(47rem, calc(100dvh - 2rem)); }
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+.dialog-header h2 { font-size: 1.16rem; }
+.dialog-header .dialog-close { width: 2.1rem; min-height: 2.1rem; padding: 0; font-size: 1.35rem; }
+.dialog-notice { flex: none; padding: .25rem 1.25rem 0; }
+.dialog-notice .notice { margin-block: .35rem .1rem; }
+.dialog-body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1.15rem 1.25rem; }
+
+.history-restore { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem .8rem; }
+
+.history-view { display: grid; grid-template-columns: minmax(9rem, 1fr) minmax(0, 3fr); gap: .85rem; }
+.history-sidebar { min-width: 0; }
+.history-versions { display: grid; gap: .35rem; max-height: 28rem; overflow: auto; list-style: none; padding: .15rem; margin: 0; }
+.history-version {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  gap: .15rem .45rem;
+  padding: .58rem .67rem;
+  border: 1px solid var(--line);
+  border-radius: .55rem;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  font-size: .78rem;
+}
+.history-version:hover, .history-version[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.history-version strong { font-size: .86rem; }
+.history-current-marker { color: var(--accent); font-weight: 650; }
+.history-version-origin, .history-version time { grid-column: 1 / -1; }
+.history-version > .muted { grid-column: 1 / -1; }
+.history-restore { margin-bottom: .65rem; }
+.history-comparison { display: grid; gap: .65rem; }
+.history-comparison-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.history-snapshot { min-width: 0; padding: .85rem; border: 1px solid var(--line); border-radius: .55rem; }
+.history-snapshot h3 { margin: 0 0 .75rem; font-size: .96rem; }
+.history-snapshot h3 .muted { font-weight: 500; }
+.history-snapshot h4 { margin-bottom: .2rem; font-size: .85rem; }
+.history-snapshot p { font-size: .86rem; overflow-wrap: anywhere; }
+.history-snapshot section + section { margin-top: .75rem; }
+
+@media (max-width: 670px) {
+  .workspace-dialog { width: calc(100vw - 1rem); }
+  .dialog-shell { max-height: calc(100dvh - 1rem); }
+  .dialog-header, .dialog-body, .dialog-notice { padding-inline: .85rem; }
+  .history-view, .history-comparison-pair { grid-template-columns: minmax(0, 1fr); }
+  .history-versions { max-height: 11rem; }
+}

@@ -47,4 +47,9 @@ export const api = {
   save: (id, content, version) => request('/cvs/' + id + '/content', {
     method: 'PUT', body: { content, expected_version: version },
   }),
+  versions: (id, signal) => request('/cvs/' + id + '/versions', { signal }),
+  version: (id, number, signal) => request('/cvs/' + id + '/versions/' + number, { signal }),
+  restore: (id, number, version) => request('/cvs/' + id + '/versions/' + number + '/restore', {
+    method: 'POST', body: { expected_version: version },
+  }),
 }
