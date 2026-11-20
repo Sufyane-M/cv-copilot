@@ -37,13 +37,13 @@ export default function App() {
     <main className="page-shell">
       {error && <Notice kind="error">{error}</Notice>}
       {loading && <Notice>Caricamento del curriculum…</Notice>}
-      {cv ? <SelectedCv key={cv.id} cv={cv} setCv={setCv} limits={config.limits} mode={config.llm_mode} onClose={() => setCv(null)} />
+      {cv ? <SelectedCv key={cv.id} cv={cv} setCv={setCv} limits={config.limits} mode={config.llm_mode} configured={config.llm_configured} onClose={() => setCv(null)} />
         : config && <CvListView limits={config.limits} onOpen={openCv} onRemove={() => {}} />}
     </main>
   </>
 }
 
-function SelectedCv({ cv, setCv, limits, mode, onClose }) {
+function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   const [content, setContent] = useState(cv.content)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
@@ -113,7 +113,7 @@ function SelectedCv({ cv, setCv, limits, mode, onClose }) {
         {dirty && <span className="muted small">Modifiche non salvate</span>}
       </div>
     </form>
-    <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} documentBusy={busy || dirty}
+    <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy || dirty}
       onReviewSaved={current => { setCv(current); setContent(current.content) }} />
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />

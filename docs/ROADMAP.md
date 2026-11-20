@@ -22,7 +22,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 08 Chat in modalità simulata
 - [x] 09 Proposte e approvazione
 - [x] 10 OpenRouter
-- [ ] 11 Scelta del modello
+- [x] 11 Scelta del modello
 - [ ] 12 Documento e PDF
 - [ ] 13 Presentazione negli snapshot
 - [ ] 14 Famiglie e galleria dei template
@@ -45,3 +45,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **08** — Chat simulata persistente con selezione della sezione e annuncio facoltativo. Verifica: Test Flask di invio, persistenza e annuncio senza rete. Build Vite. Prossimo passo: Proposte strutturate e approvazione.
 - **09** — Proposte con motivazione, confronto, approvazione e rifiuto. Riusata la transazione di accettazione del riferimento. Verifica: Test di concorrenza, rollback, obsolescenza, autorizzazione della sezione, duplicati e build. Prossimo passo: Adattatore OpenRouter e risposte di errore.
 - **10** — Adattatore HTTPX con tool calling, parsing controllato e errori in italiano. Riusato il contratto OpenRouter del riferimento. Verifica: Test HTTPX simulati sul payload, chiarimenti ed errori del provider. Suite Flask e build Vite. Prossimo passo: Catalogo e selezione del modello.
+- **11** — Catalogo dei modelli compatibili, cache, selettore, ultima scelta e attribuzione persistita. Riusati il catalogo, la migrazione idempotente e il selettore. Verifica: Suite per catalogo, trasporto HTTPX, attribuzione e migrazione di conversazioni esistenti. Build Vite. Prossimo passo: Rendering condiviso e PDF.

@@ -184,7 +184,7 @@ def request_review(cv_id: int, revision: dict, config: dict) -> dict:
     base = revision['expected_version']
     section_id = revision['section_id']
     mode = config['LLM_MODE']
-    requested_model_id = revision.get('model_id') if mode == 'openrouter' else None
+    requested_model_id = revision['model_id'] if mode == 'openrouter' else None
     with transaction(connection):
         cv = get_cv(cv_id)
         require_expected_version(cv, base)
@@ -214,9 +214,10 @@ def request_review(cv_id: int, revision: dict, config: dict) -> dict:
             VALUES (?, 'user', ?, ?, ?, ?, ?)
         ''', (cv_id, revision['message'], now, base, section_id, revision['job_posting']))
         assistant = connection.execute('''
-            INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id)
-            VALUES (?, 'assistant', ?, ?, ?, ?)
-        ''', (cv_id, result['text'], now, base, section_id))
+            INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id,
+                                 llm_mode, requested_model_id, actual_model_id)
+            VALUES (?, 'assistant', ?, ?, ?, ?, ?, ?, ?)
+        ''', (cv_id, result['text'], now, base, section_id, mode, requested_model_id, result['actual_model_id']))
         proposal = result['proposal']
         if proposal is not None:
             connection.execute('''

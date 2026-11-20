@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from threading import Barrier
 
+import httpx
 import pytest
 
 from backend import db, llm
@@ -298,3 +299,75 @@ def test_errore_provider_non_modifica_documento(client, saved_cv, monkeypatch):
     assert error_code(response) == "provider_timeout"
     assert client.get(saved_cv).json == before
     assert client.get(f"{saved_cv}/chat").json["proposals"] == []
+
+def test_catalogo_e_attribuzione_openrouter_persistono(app, saved_cv):
+    model_id = "test/modello"
+    actual_id = "test/modello-versionato"
+    sent = []
+
+    def upstream(request):
+        if request.method == "GET":
+            return httpx.Response(200, json={"data": [{
+                "id": model_id, "name": "Modello di prova",
+                "architecture": {"input_modalities": ["text"], "output_modalities": ["text"]},
+                "supported_parameters": ["tools"],
+            }]})
+        sent.append(json.loads(request.content)["model"])
+        return httpx.Response(200, json={"model": actual_id, "choices": [{
+            "finish_reason": "stop", "message": {"role": "assistant", "content": "Quale esperienza vuoi descrivere?"},
+        }]})
+
+    settings = {
+        "TESTING": True, "DATABASE": app.config["DATABASE"], "LLM_MODE": "openrouter",
+        "OPENROUTER_API_KEY": "placeholder-di-test", "OPENROUTER_DEFAULT_MODEL": model_id,
+        "OPENROUTER_TRANSPORT": httpx.MockTransport(upstream),
+    }
+    client = create_app(settings).test_client()
+    config = client.get("/api/config").json
+    assert set(config) == {"llm_mode", "llm_configured", "limits"}
+    assert config["llm_configured"] is True
+    assert client.get("/api/models").json == {
+        "models": [{"id": model_id, "name": "Modello di prova"}], "default_model_id": model_id,
+    }
+
+    response = request_review(client, saved_cv, model_id="test/non-consentito")
+    assert response.status_code == 400 and error_code(response) == "model_unavailable"
+    assert sent == []
+    assert client.get(f"{saved_cv}/chat").json["messages"] == []
+    assert request_review(client, saved_cv, model_id=model_id).status_code == 201
+    assert sent == [model_id]
+    assert client.get(saved_cv).json["version_number"] == 2
+
+    restarted = create_app(settings).test_client()
+    user, assistant = restarted.get(f"{saved_cv}/chat").json["messages"]
+    assert user["llm_mode"] is None and user["requested_model_id"] is None
+    assert assistant["llm_mode"] == "openrouter"
+    assert assistant["requested_model_id"] == model_id
+    assert assistant["actual_model_id"] == actual_id
+
+
+def test_migrazione_attribuzione_conserva_storico_e_supporta_demo(tmp_path):
+    database = tmp_path / "precedente.sqlite3"
+    old_schema = "\n".join(
+        line for line in db.SCHEMA_PATH.read_text(encoding="utf-8").splitlines()
+        if not line.strip().startswith(tuple(f"{column} " for column in db.MESSAGE_MODEL_COLUMNS))
+    )
+    with closing(sqlite3.connect(database)) as connection, connection:
+        connection.executescript(old_schema)
+        connection.execute("INSERT INTO cv VALUES (1, 'CV conservato', '2026-01-01', '2026-01-01')")
+        connection.execute("""INSERT INTO cv_version (cv_id, number, content_json, origin, created_at)
+                            VALUES (1, 1, ?, 'creation', '2026-01-01')""", (json.dumps(content_with("Studio informatica")),))
+        connection.execute("""INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id)
+                            VALUES (1, 'assistant', 'Messaggio precedente', '2026-01-01', 1, 'profile')""")
+
+    settings = {"TESTING": True, "DATABASE": database, "LLM_MODE": "mock"}
+    client = create_app(settings).test_client()
+    assert client.get("/api/models").json == {"models": [], "default_model_id": None}
+    assert request_review(client, "/api/cvs/1", version=1).status_code == 201
+    restarted = create_app(settings).test_client()
+    previous, _, last = restarted.get("/api/cvs/1/chat").json["messages"]
+    assert previous["text"] == "Messaggio precedente"
+    assert all(previous[field] is None for field in db.MESSAGE_MODEL_COLUMNS)
+    assert last["llm_mode"] == "mock"
+    assert last["requested_model_id"] is None and last["actual_model_id"] is None
+    assert restarted.get("/api/cvs/1").json["version_number"] == 1

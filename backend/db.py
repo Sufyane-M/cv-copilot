@@ -8,6 +8,11 @@ from flask.cli import with_appcontext
 
 
 SCHEMA_PATH = Path(__file__).with_name('schema.sql')
+MESSAGE_MODEL_COLUMNS = {
+    'llm_mode': "TEXT CHECK (llm_mode IN ('mock', 'openrouter'))",
+    'requested_model_id': 'TEXT',
+    'actual_model_id': 'TEXT',
+}
 
 
 def get_db() -> sqlite3.Connection:
@@ -41,7 +46,14 @@ def transaction(connection: sqlite3.Connection, *, write: bool = False):
 def init_db() -> None:
     database_path = Path(current_app.config['DATABASE'])
     database_path.parent.mkdir(parents=True, exist_ok=True)
-    get_db().executescript(SCHEMA_PATH.read_text(encoding='utf-8'))
+    connection = get_db()
+    connection.executescript(SCHEMA_PATH.read_text(encoding='utf-8'))
+    with transaction(connection, write=True):
+        existing = {row['name'] for row in connection.execute('PRAGMA table_info(message)')}
+        # Le colonne nullable mantengono neutra l’attribuzione dei messaggi già salvati.
+        for column, definition in MESSAGE_MODEL_COLUMNS.items():
+            if column not in existing:
+                connection.execute(f'ALTER TABLE message ADD COLUMN {column} {definition}')
 
 
 @click.command('init-db')

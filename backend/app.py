@@ -7,7 +7,7 @@ from dotenv import dotenv_values
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
-from . import cv_service, db, validation
+from . import cv_service, db, llm, validation
 from .validation import ApiError
 
 
@@ -23,6 +23,7 @@ def create_app(test_config: dict | None = None) -> Flask:
         LLM_MODE=settings.get('LLM_MODE', 'mock'),
         OPENROUTER_API_KEY=(settings.get('OPENROUTER_API_KEY') or '').strip(),
         OPENROUTER_DEFAULT_MODEL=(settings.get('OPENROUTER_DEFAULT_MODEL') or '').strip(),
+        OPENROUTER_CATALOG=llm.ModelCatalog(),
         LLM_TIMEOUT=settings.get('LLM_TIMEOUT', 20),
         LLM_MAX_TOKENS=settings.get('LLM_MAX_TOKENS', 1600),
         MAX_CONTENT_LENGTH=512 * 1024,
@@ -170,7 +171,7 @@ def register_routes(app: Flask) -> None:
 
     @app.post('/api/cvs/<int:cv_id>/chat')
     def request_review(cv_id):
-        payload = body({'message', 'section_id', 'expected_version'}, {'job_posting'})
+        payload = body({'message', 'section_id', 'expected_version'}, {'job_posting', 'model_id'})
         posting = payload.get('job_posting')
         if posting is not None:
             posting = validation.string(posting, 'L’annuncio', validation.MAX_JOB_POSTING, allow_empty=True).strip() or None
@@ -179,6 +180,7 @@ def register_routes(app: Flask) -> None:
             'section_id': validation.section_id(payload['section_id']),
             'expected_version': validation.version_number(payload['expected_version']),
             'job_posting': posting,
+            'model_id': validation.model_id(payload['model_id']) if 'model_id' in payload else None,
         }
         return cv_service.request_review(cv_id, revision, app.config), 201
 
@@ -190,3 +192,10 @@ def register_routes(app: Flask) -> None:
     @app.post('/api/cvs/<int:cv_id>/proposals/<int:proposal_id>/reject')
     def reject_proposal(cv_id, proposal_id):
         return cv_service.resolve_proposal(cv_id, proposal_id, accept=False)
+
+    @app.get('/api/models')
+    def list_models():
+        models = llm.get_models(app.config)
+        configured_default = app.config['OPENROUTER_DEFAULT_MODEL']
+        default_id = configured_default if any(model['id'] == configured_default for model in models) else None
+        return {'models': models, 'default_model_id': default_id}

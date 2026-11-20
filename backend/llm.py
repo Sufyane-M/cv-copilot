@@ -1,4 +1,6 @@
 import json
+from threading import Lock
+from time import monotonic
 
 import httpx
 
@@ -6,6 +8,12 @@ from .validation import ApiError, MAX_ASSISTANT_TEXT, MAX_REASON, MAX_SECTION_TE
 
 
 OPENROUTER_URL = 'https://openrouter.ai/api/v1'
+CATALOG_TTL = 600
+CATALOG_FILTERS = {
+    'input_modalities': 'text',
+    'output_modalities': 'text',
+    'supported_parameters': 'tools',
+}
 
 SYSTEM_PROMPT = f"""
 Sei un revisore di curriculum. Rispondi in italiano e lavora esclusivamente sul
@@ -128,6 +136,59 @@ def openrouter_json(config: dict, method: str, path: str, **options) -> dict:
     return payload
 
 
+def compatible_model(entry) -> dict | None:
+    if not isinstance(entry, dict):
+        return None
+    try:
+        identifier = model_id(entry.get('id'))
+    except ApiError:
+        return None
+    architecture = entry.get('architecture')
+    parameters = entry.get('supported_parameters')
+    if not isinstance(architecture, dict):
+        return None
+    input_modes = architecture.get('input_modalities')
+    output_modes = architecture.get('output_modalities')
+    if not isinstance(input_modes, list) or 'text' not in input_modes:
+        return None
+    if not isinstance(output_modes, list) or 'text' not in output_modes:
+        return None
+    if not isinstance(parameters, list) or 'tools' not in parameters:
+        return None
+    name = entry.get('name')
+    return {'id': identifier, 'name': name.strip() if isinstance(name, str) and name.strip() else identifier}
+
+
+class ModelCatalog:
+    def __init__(self):
+        self.models = []
+        self.expires_at = float('-inf')
+        self.lock = Lock()
+
+    def read(self, config: dict) -> list:
+        # Dopo la scadenza, una sola richiesta rinnova il catalogo per tutta l'app.
+        with self.lock:
+            if monotonic() >= self.expires_at:
+                payload = openrouter_json(config, 'GET', '/models', params=CATALOG_FILTERS)
+                if not isinstance(payload.get('data'), list):
+                    raise invalid_response('Il catalogo di OpenRouter non è utilizzabile.')
+                models = {}
+                for entry in payload['data']:
+                    model = compatible_model(entry)
+                    if model is not None:
+                        models[model['id']] = model
+                self.models = sorted(models.values(), key=lambda model: (model['name'].casefold(), model['id']))
+                self.expires_at = monotonic() + CATALOG_TTL
+            return self.models
+
+
+def get_models(config: dict) -> list:
+    if config['LLM_MODE'] == 'mock':
+        return []
+    require_api_key(config)
+    return config['OPENROUTER_CATALOG'].read(config)
+
+
 def decode_tool_call(tool):
     function = tool.get('function') if isinstance(tool, dict) and tool.get('type') == 'function' else None
     if not isinstance(function, dict) or function.get('name') != PROPOSE_EDIT['name']:
@@ -180,9 +241,11 @@ def generate_review(config: dict, context: dict) -> dict:
         return mock_review(context['section'])
 
     require_api_key(config)
-    model_id = config['OPENROUTER_DEFAULT_MODEL']
+    model_id = context.get('model_id')
     if not model_id:
-        raise ApiError('model_required', 'Indica OPENROUTER_DEFAULT_MODEL nella configurazione locale.', 400)
+        raise ApiError('model_required', 'Scegli un modello OpenRouter prima di inviare.', 400)
+    if not any(model['id'] == model_id for model in get_models(config)):
+        raise ApiError('model_unavailable', 'Il modello scelto non è disponibile nel catalogo. Scegline un altro.', 400)
 
     # Lo storico è un dato applicativo. Il tool propone un testo senza un secondo turno di esecuzione.
     review_context = {field: value for field, value in context.items() if field != 'model_id'}

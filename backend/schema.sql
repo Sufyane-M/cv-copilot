@@ -30,6 +30,9 @@ CREATE TABLE IF NOT EXISTS message (
     base_version_number INTEGER NOT NULL,
     section_id TEXT NOT NULL,
     job_posting TEXT,
+    llm_mode TEXT CHECK (llm_mode IN ('mock', 'openrouter')),
+    requested_model_id TEXT,
+    actual_model_id TEXT,
     UNIQUE (cv_id, id, base_version_number, section_id),
     FOREIGN KEY (cv_id, base_version_number) REFERENCES cv_version(cv_id, number)
 );

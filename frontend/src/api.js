@@ -38,6 +38,7 @@ async function request(path, { method = 'GET', body, signal, pdf = false } = {})
 }
 
 export const api = {
+  models: signal => request('/models', { signal }),
   config: signal => request('/config', { signal }),
   cvs: signal => request('/cvs', { signal }),
   cv: (id, signal) => request('/cvs/' + id, { signal }),
