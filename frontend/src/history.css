@@ -72,3 +72,14 @@
 .pdf-stage { min-height: 420px; display: grid; margin: 12px 0; background: #f0f4f2; }
 .pdf-frame { width: 100%; height: min(72vh, 760px); border: 0; }
 .pdf-placeholder { place-self: center; margin: 16px; text-align: center; }
+
+.draft-recovery { display: grid; gap: .85rem; }
+.recovery-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.recovery-content { min-width: 0; padding: .7rem; border: 1px solid var(--line); border-radius: .55rem; }
+.recovery-content h3, .recovery-pair h3 { font-size: .93rem; margin-bottom: .3rem; }
+.recovery-content summary { cursor: pointer; font-weight: 650; }
+.recovery-content > .recovery-pair { margin-top: .7rem; }
+.recovery-choices { display: grid; gap: .35rem; margin: .75rem 0 0; border: 1px solid var(--line); border-radius: .5rem; }
+.recovery-choices label { display: flex; align-items: center; gap: .45rem; }
+.recovery-choices input { width: auto; min-height: auto; }
+@media (max-width: 670px) { .recovery-pair { grid-template-columns: minmax(0, 1fr); } }

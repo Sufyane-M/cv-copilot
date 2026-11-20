@@ -29,7 +29,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 15 Editing direttamente sul documento
 - [x] 16 Personalizzazione e riquadri
 - [x] 17 Bozza e Undo/Redo
-- [ ] 18 Coordinamento fra editor e AI
+- [x] 18 Coordinamento fra editor e AI
 - [ ] 19 Completamento dell’interfaccia
 - [ ] 20 Verifica finale e documentazione
 
@@ -52,3 +52,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **15** — Titoli, testo multilinea, dettagli e foto modificabili direttamente sulla pagina A4. Riusati il componente del documento e il ridimensionamento preventivo delle immagini del riferimento. Verifica in Chrome con database isolato del focus, delle righe, dei caratteri accentati e della persistenza degli ID. Build Vite. Prossimo passo: Personalizzazione e dimensioni dei riquadri.
 - **16** — Controlli contestuali per colori, tipografia, pagina e riquadri. Maniglie utilizzabili con puntatore e tastiera, larghezza vincolata alla colonna e altezza minima. Verifica in Chrome di ridimensionamento, testo intero, valori limite, riordino e persistenza. Due test frontend e build Vite. Prossimo passo: Undo e Redo della bozza.
 - **17** — Bozza locale con Annulla e Ripeti, digitazione e trascinamenti raggruppati e salvataggio esplicito. Verifica in Chrome che il PDF di bozza usa lo stesso file del download, la bozza resta al ritorno al documento e la versione cresce soltanto con Salva. Tre test frontend e build Vite. Prossimo passo: recupero delle modifiche dopo una proposta AI.
+- **18** — Recupero esplicito della bozza dopo una proposta AI e confronto per sezione se cambiano entrambi i testi. Il recupero mantiene le personalizzazioni e lascia intatti gli snapshot precedenti. Verificate in Chrome entrambe le situazioni con proposte simulate e SQLite isolato. 56 test Flask, sette test frontend e build Vite. Prossimo passo: workspace desktop e mobile.

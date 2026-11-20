@@ -7,7 +7,7 @@ import { applyTemplate } from './templateSample.mjs'
 import './panel.css'
 
 export default function DocumentPanel({
-  cv, mode, onMode, content, limits, busy, dirty, onChange, onSave, onDiscard, canUndo, canRedo, onUndo, onRedo,
+  cv, mode, onMode, content, limits, busy, dirty, stale, onChange, onSave, onDiscard, canUndo, canRedo, onUndo, onRedo,
 }) {
   const [showTemplates, setShowTemplates] = useState(false)
   const [inspectorOpen, setInspectorOpen] = useState(false)
@@ -41,7 +41,7 @@ export default function DocumentPanel({
               onMode('edit')
             }}>Personalizza</button>
           <button type="button" className="button button-small button-primary"
-            onClick={onSave} disabled={busy || processingPhoto || !dirty || !valid}>Salva</button>
+            onClick={onSave} disabled={busy || processingPhoto || !dirty || stale || !valid}>Salva</button>
           {pdf.url
             ? <a className="button button-small" href={pdf.url} download={filename}>{downloadLabel}</a>
             : <button type="button" className="button button-small" disabled

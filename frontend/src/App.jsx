@@ -1,4 +1,5 @@
 import DocumentPanel from './document/DocumentPanel.jsx'
+import DraftRecovery from './document/DraftRecovery.jsx'
 import ReviewView from './views/ReviewView.jsx'
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
@@ -49,9 +50,23 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   const [draft, setDraft] = useState(null)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showRecovery, setShowRecovery] = useState(false)
   const [error, setError] = useState(null)
   const content = draft?.content ?? cv.content
   const dirty = !sameContent(content, cv.content)
+  const stale = dirty && draft.baseVersion !== cv.version_number
+
+  function useCurrentCv(current) {
+    setCv(current)
+    setDraft(previous => previous && previous.baseVersion !== current.version_number
+      && sameContent(previous.content, current.content) ? null : previous)
+  }
+
+  function recover(nextContent) {
+    setDraft(changeDraft(null, cv, nextContent))
+    setError(null)
+    setShowRecovery(false)
+  }
 
   useEffect(() => {
     if (!dirty) return
@@ -68,16 +83,20 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     setDraft(null)
     setError(null)
   }
-  async function runDocumentChange(request) {
+  async function runDocumentChange(request, discardDraft = true) {
     if (busy) return false
     setBusy(true)
     setError(null)
     try {
       const saved = await request()
-      setCv(saved)
-      setDraft(null)
+      useCurrentCv(saved)
+      if (discardDraft) setDraft(null)
       return true
     } catch (failure) {
+      if (failure.status === 409) {
+        try { useCurrentCv(await api.cv(cv.id)) }
+        catch (reloadError) { setError(reloadError); return false }
+      }
       setError(failure)
       return false
     } finally {
@@ -86,7 +105,7 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   }
 
   function save() {
-    if (dirty) void runDocumentChange(() => api.save(cv.id, content, draft.baseVersion))
+    if (dirty && !stale) void runDocumentChange(() => api.save(cv.id, content, draft.baseVersion))
   }
 
   async function restore(number) {
@@ -98,15 +117,18 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     }
   }
 
-  const notice = error && <Notice kind="error">
-    {error.message}{' '}
-    {error.code === 'version_conflict' && <button type="button" className="button button-small" disabled={busy}
-      onClick={() => {
-        if (!dirty || window.confirm('Scartare le modifiche non salvate e ricaricare il CV?')) {
-          void runDocumentChange(() => api.cv(cv.id))
-        }
-      }}>Ricarica CV</button>}
-  </Notice>
+  const notice = <>
+    {error && <Notice kind="error">
+      {error.message}{' '}
+      {error.status === 409 && <button type="button" className="button button-small" disabled={busy}
+        onClick={() => void runDocumentChange(() => api.cv(cv.id), false)}>Ricarica CV</button>}
+    </Notice>}
+    {stale && <Notice kind="error">
+      Il documento è passato dalla versione {draft.baseVersion} alla {cv.version_number} durante la modifica.{' '}
+      <button type="button" className="button button-small" disabled={busy}
+        onClick={() => { setShowHistory(false); setShowRecovery(true) }}>Confronta e recupera</button>
+    </Notice>}
+  </>
 
   return <section className="selected-cv">
     <div className="editor-header">
@@ -120,14 +142,17 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     </div>
     {!showHistory && notice}
     <DocumentPanel cv={cv} mode={pane} onMode={setPane} content={content} limits={limits}
-      busy={busy} dirty={dirty} onChange={(next, group) => setDraft(previous => changeDraft(previous, cv, next, group))}
+      busy={busy} dirty={dirty} stale={stale} onChange={(next, group) => setDraft(previous => changeDraft(previous, cv, next, group))}
       onSave={save} onDiscard={discard}
       canUndo={Boolean(draft?.past.length)} canRedo={Boolean(draft?.future.length)}
       onUndo={() => setDraft(undoDraft)} onRedo={() => setDraft(redoDraft)} />
-    <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy || dirty}
-      onReviewSaved={current => { setCv(current); setDraft(null) }} />
+    <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy}
+      onReviewSaved={useCurrentCv} />
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
+    </WorkspaceDialog>}
+    {showRecovery && stale && <WorkspaceDialog title="Recupera la bozza" wide busy={busy} onClose={() => setShowRecovery(false)}>
+      <DraftRecovery key={cv.version_number} draft={draft} cv={cv} busy={busy} onRecover={recover} />
     </WorkspaceDialog>}
   </section>
 }
