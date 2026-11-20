@@ -21,3 +21,10 @@ Il controllo di avvio è disponibile in `GET /api/health`. Il repository locale 
 ## Avvio dell’interfaccia
 
 Dal secondo terminale entra in frontend, esegui npm ci e npm run dev. Apri http://127.0.0.1:5174. Il proxy indirizza /api a Flask sulla porta 5001.
+
+
+## Template e dati dimostrativi
+
+Dal curriculum aperto, **Template** mostra 24 preset con miniature del documento e filtri per famiglia o ritratto. Su un curriculum esistente la scelta applica lo stile alla bozza conservando i dati. Su un curriculum senza sezioni prepara anche contenuti sintetici da sostituire. **Salva** registra lo snapshot.
+
+Il ritratto dimostrativo di Elena Ricci è un’immagine di una persona fittizia, generata con ImageGen nella versione di riferimento. [Ritratto dimostrativo](frontend/src/document/demo-portrait.jpg)

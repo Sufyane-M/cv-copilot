@@ -1,10 +1,12 @@
 {
   "defaultTemplate": "classic-roma",
   "families": {
-    "classic": {
-      "name": "Classic",
-      "supportsColumns": false
-    }
+    "classic": { "name": "Classic", "supportsColumns": false },
+    "modern": { "name": "Modern", "supportsColumns": true },
+    "minimal": { "name": "Minimal", "supportsColumns": false },
+    "sidebar": { "name": "Sidebar", "supportsColumns": true },
+    "editorial": { "name": "Editorial", "supportsColumns": true },
+    "creative": { "name": "Creative", "supportsColumns": true }
   },
   "defaultBlock": {
     "width": 100,
@@ -18,40 +20,220 @@
   },
   "templates": [
     {
-      "id": "classic-roma",
-      "name": "Roma",
-      "family": "classic",
-      "layout": "signature",
-      "description": "Serif, fregio sottile e percorso lineare",
+      "id": "classic-roma", "name": "Roma", "family": "classic",
+      "layout": "signature", "description": "Serif, fregio sottile e percorso lineare",
       "design": {
-        "colors": {
-          "accent": "#21473d",
-          "text": "#2a362f",
-          "title": "#182d28",
-          "background": "#fffffd",
-          "sidebar": "#e9f0eb",
-          "box": "#fffffd",
-          "border": "#b5c7bc"
-        },
-        "typography": {
-          "font": "serif",
-          "titleSize": 39,
-          "headingSize": 11,
-          "textSize": 9.5,
-          "weight": 400,
-          "lineHeight": 1.45,
-          "letterSpacing": 0
-        },
-        "page": {
-          "margin": 16,
-          "sectionGap": 6,
-          "columns": 1,
-          "asideWidth": 32,
-          "asideSide": "right",
-          "align": "left",
-          "header": "left",
-          "separators": "line"
-        }
+        "colors": {"accent": "#21473d", "text": "#2a362f", "title": "#182d28", "background": "#fffffd", "sidebar": "#e9f0eb", "box": "#fffffd", "border": "#b5c7bc"},
+        "typography": {"font": "serif", "titleSize": 39, "headingSize": 11, "textSize": 9.5, "weight": 400, "lineHeight": 1.45, "letterSpacing": 0},
+        "page": {"margin": 16, "sectionGap": 6, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "left", "separators": "line"}
+      }
+    },
+    {
+      "id": "classic-firenze", "name": "Firenze", "family": "classic",
+      "layout": "centered", "description": "Intestazione simmetrica e filetti color ottone",
+      "design": {
+        "colors": {"accent": "#783d31", "text": "#382b2e", "title": "#311d26", "background": "#fffdf8", "sidebar": "#f2ece5", "box": "#fffdf8", "border": "#d6b9aa"},
+        "typography": {"font": "serif", "titleSize": 35, "headingSize": 12, "textSize": 9.75, "weight": 400, "lineHeight": 1.48, "letterSpacing": 0.15},
+        "page": {"margin": 17, "sectionGap": 5.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "center", "separators": "none"}
+      }
+    },
+    {
+      "id": "classic-torino", "name": "Torino", "family": "classic",
+      "layout": "ledger", "description": "Date allineate e intestazione compatta",
+      "design": {
+        "colors": {"accent": "#344554", "text": "#202d3a", "title": "#142431", "background": "#ffffff", "sidebar": "#e7edf2", "box": "#ffffff", "border": "#c2ccd5"},
+        "typography": {"font": "sans", "titleSize": 33, "headingSize": 11.5, "textSize": 9.5, "weight": 400, "lineHeight": 1.42, "letterSpacing": 0},
+        "page": {"margin": 15, "sectionGap": 5.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "offset", "separators": "line"}
+      }
+    },
+    {
+      "id": "classic-siena", "name": "Siena", "family": "classic",
+      "layout": "folio", "description": "Carta avorio e sezioni con titoli laterali",
+      "design": {
+        "colors": {"accent": "#4d5035", "text": "#343229", "title": "#2e3227", "background": "#fffdf4", "sidebar": "#ecebdc", "box": "#fffdf4", "border": "#b3b197"},
+        "typography": {"font": "serif", "titleSize": 38, "headingSize": 11, "textSize": 9.75, "weight": 400, "lineHeight": 1.5, "letterSpacing": 0},
+        "page": {"margin": 18, "sectionGap": 6, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "left", "separators": "line"}
+      }
+    },
+    {
+      "id": "modern-milano", "name": "Milano", "family": "modern",
+      "layout": "masthead", "portrait": "circle", "portraitPosition": "right", "description": "Fascia blu, foto tonda e due colonne",
+      "design": {
+        "colors": {"accent": "#274b9c", "text": "#243043", "title": "#172c54", "background": "#ffffff", "sidebar": "#e9effd", "box": "#ffffff", "border": "#b7c8e7"},
+        "typography": {"font": "sans", "titleSize": 37, "headingSize": 11.5, "textSize": 9.5, "weight": 400, "lineHeight": 1.44, "letterSpacing": 0},
+        "page": {"margin": 13, "sectionGap": 5.5, "columns": 2, "asideWidth": 33, "asideSide": "right", "align": "left", "header": "band", "separators": "line"}
+      }
+    },
+    {
+      "id": "modern-navigli", "name": "Navigli", "family": "modern",
+      "layout": "timeline", "description": "Percorso verticale con date e indicatori",
+      "design": {
+        "colors": {"accent": "#2c6457", "text": "#183b36", "title": "#103a31", "background": "#ffffff", "sidebar": "#e5f0eb", "box": "#f9fbf8", "border": "#9dbdb2"},
+        "typography": {"font": "sans", "titleSize": 36, "headingSize": 11.5, "textSize": 9.75, "weight": 400, "lineHeight": 1.45, "letterSpacing": 0.12},
+        "page": {"margin": 15, "sectionGap": 5.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "offset", "separators": "none"}
+      }
+    },
+    {
+      "id": "modern-nodo", "name": "Nodo", "family": "modern",
+      "layout": "modules", "description": "Moduli numerici e colonna tecnica a sinistra",
+      "design": {
+        "colors": {"accent": "#39476d", "text": "#303541", "title": "#20283d", "background": "#ffffff", "sidebar": "#ecf0f7", "box": "#ffffff", "border": "#b7c4dc"},
+        "typography": {"font": "mono", "titleSize": 31, "headingSize": 11, "textSize": 9.25, "weight": 400, "lineHeight": 1.48, "letterSpacing": 0},
+        "page": {"margin": 13, "sectionGap": 4.5, "columns": 2, "asideWidth": 34, "asideSide": "left", "align": "left", "header": "center", "separators": "none"}
+      }
+    },
+    {
+      "id": "modern-vetta", "name": "Vetta", "family": "modern",
+      "layout": "split", "portrait": "square", "portraitPosition": "left", "description": "Griglia ampia con ritratto squadrato",
+      "design": {
+        "colors": {"accent": "#7b531d", "text": "#322a21", "title": "#3b2c17", "background": "#fffdf8", "sidebar": "#f1e8d7", "box": "#fffdf8", "border": "#caaf83"},
+        "typography": {"font": "sans", "titleSize": 39, "headingSize": 11.5, "textSize": 9.75, "weight": 400, "lineHeight": 1.48, "letterSpacing": -0.1},
+        "page": {"margin": 15, "sectionGap": 6, "columns": 2, "asideWidth": 34, "asideSide": "right", "align": "left", "header": "left", "separators": "line"}
+      }
+    },
+    {
+      "id": "minimal-neve", "name": "Neve", "family": "minimal",
+      "layout": "quiet", "description": "Bianco, testo nitido e spazi regolari",
+      "design": {
+        "colors": {"accent": "#485b61", "text": "#293335", "title": "#253234", "background": "#ffffff", "sidebar": "#eff3f3", "box": "#ffffff", "border": "#bac6c8"},
+        "typography": {"font": "sans", "titleSize": 34, "headingSize": 10, "textSize": 9.75, "weight": 400, "lineHeight": 1.48, "letterSpacing": 0},
+        "page": {"margin": 20, "sectionGap": 6, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "left", "separators": "none"}
+      }
+    },
+    {
+      "id": "minimal-carta", "name": "Carta", "family": "minimal",
+      "layout": "folio", "description": "Avorio e impaginazione da corrispondenza",
+      "design": {
+        "colors": {"accent": "#59483a", "text": "#312c28", "title": "#30261e", "background": "#fdf9f1", "sidebar": "#ebe5d7", "box": "#fdf9f1", "border": "#c9beaa"},
+        "typography": {"font": "serif", "titleSize": 29, "headingSize": 10, "textSize": 10, "weight": 400, "lineHeight": 1.58, "letterSpacing": 0},
+        "page": {"margin": 21, "sectionGap": 5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "left", "separators": "none"}
+      }
+    },
+    {
+      "id": "minimal-linea", "name": "Linea", "family": "minimal",
+      "layout": "ledger", "description": "Griglia monospaziata con righe e date",
+      "design": {
+        "colors": {"accent": "#343855", "text": "#2b2c40", "title": "#212238", "background": "#ffffff", "sidebar": "#edecf4", "box": "#ffffff", "border": "#c4c2d9"},
+        "typography": {"font": "mono", "titleSize": 25, "headingSize": 10, "textSize": 9.25, "weight": 400, "lineHeight": 1.48, "letterSpacing": 0.2},
+        "page": {"margin": 18, "sectionGap": 4, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "center", "separators": "line"}
+      }
+    },
+    {
+      "id": "minimal-nord", "name": "Nord", "family": "minimal",
+      "layout": "centered", "portrait": "circle", "portraitPosition": "left", "description": "Ritratto discreto, carta fredda e linee essenziali",
+      "design": {
+        "colors": {"accent": "#28504d", "text": "#223838", "title": "#203330", "background": "#fbfdfc", "sidebar": "#e9f0ed", "box": "#fbfdfc", "border": "#b0c6c2"},
+        "typography": {"font": "sans", "titleSize": 32, "headingSize": 10.5, "textSize": 9.75, "weight": 400, "lineHeight": 1.47, "letterSpacing": 0.1},
+        "page": {"margin": 18, "sectionGap": 6.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "center", "separators": "none"}
+      }
+    },
+    {
+      "id": "sidebar-studio", "name": "Studio", "family": "sidebar",
+      "layout": "rail", "portrait": "circle", "portraitPosition": "sidebar", "contactsPosition": "sidebar",
+      "description": "Ritratto e competenze nella colonna salvia",
+      "design": {
+        "colors": {"accent": "#305750", "text": "#25352e", "title": "#213e34", "background": "#ffffff", "sidebar": "#d9e8da", "box": "#ffffff", "border": "#a5bead"},
+        "typography": {"font": "sans", "titleSize": 39, "headingSize": 11, "textSize": 9.75, "weight": 400, "lineHeight": 1.47, "letterSpacing": 0},
+        "page": {"margin": 12, "sectionGap": 5.5, "columns": 2, "asideWidth": 34, "asideSide": "left", "align": "left", "header": "left", "separators": "none"}
+      }
+    },
+    {
+      "id": "sidebar-portico", "name": "Portico", "family": "sidebar",
+      "layout": "split", "portrait": "arch", "portraitPosition": "right", "description": "Ritratto ad arco e colonna laterale malva",
+      "design": {
+        "colors": {"accent": "#573d73", "text": "#31283a", "title": "#372641", "background": "#fefcff", "sidebar": "#eae4f2", "box": "#fefcff", "border": "#c0add0"},
+        "typography": {"font": "serif", "titleSize": 35, "headingSize": 11.5, "textSize": 9.75, "weight": 400, "lineHeight": 1.5, "letterSpacing": 0},
+        "page": {"margin": 15, "sectionGap": 5.5, "columns": 2, "asideWidth": 37, "asideSide": "right", "align": "left", "header": "offset", "separators": "line"}
+      }
+    },
+    {
+      "id": "sidebar-laboratorio", "name": "Laboratorio", "family": "sidebar",
+      "layout": "modules", "contactsPosition": "sidebar", "description": "Matrice tecnica con riquadri compatti",
+      "design": {
+        "colors": {"accent": "#305359", "text": "#25373a", "title": "#1f3639", "background": "#fcfefe", "sidebar": "#e2edea", "box": "#fcfefe", "border": "#92b3a9"},
+        "typography": {"font": "mono", "titleSize": 28, "headingSize": 10.5, "textSize": 9, "weight": 400, "lineHeight": 1.42, "letterSpacing": 0},
+        "page": {"margin": 13, "sectionGap": 4, "columns": 2, "asideWidth": 31, "asideSide": "left", "align": "left", "header": "offset", "separators": "line"}
+      }
+    },
+    {
+      "id": "sidebar-quercia", "name": "Quercia", "family": "sidebar",
+      "layout": "rail", "contactsPosition": "sidebar", "description": "Colonna ampia a destra e palette oliva",
+      "design": {
+        "colors": {"accent": "#566237", "text": "#343a29", "title": "#2c3824", "background": "#fffdf4", "sidebar": "#e8ebd7", "box": "#fffdf4", "border": "#b1ba8d"},
+        "typography": {"font": "sans", "titleSize": 36, "headingSize": 12, "textSize": 9.5, "weight": 400, "lineHeight": 1.43, "letterSpacing": -0.1},
+        "page": {"margin": 13, "sectionGap": 5, "columns": 2, "asideWidth": 38, "asideSide": "right", "align": "left", "header": "offset", "separators": "line"}
+      }
+    },
+    {
+      "id": "editorial-rivista", "name": "Rivista", "family": "editorial",
+      "layout": "feature", "portrait": "square", "portraitPosition": "right", "description": "Testata da rivista, ritratto e tipografia marcata",
+      "design": {
+        "colors": {"accent": "#7d432f", "text": "#302c2a", "title": "#2c221d", "background": "#fffdf8", "sidebar": "#f5ebdf", "box": "#fffdf8", "border": "#c8ad9b"},
+        "typography": {"font": "serif", "titleSize": 43, "headingSize": 13, "textSize": 10, "weight": 400, "lineHeight": 1.48, "letterSpacing": 0},
+        "page": {"margin": 15, "sectionGap": 6, "columns": 2, "asideWidth": 31, "asideSide": "right", "align": "left", "header": "left", "separators": "line"}
+      }
+    },
+    {
+      "id": "editorial-quaderno", "name": "Quaderno", "family": "editorial",
+      "layout": "feature", "description": "Ocra tenue e colonna da note a margine",
+      "design": {
+        "colors": {"accent": "#71543e", "text": "#342e28", "title": "#35261d", "background": "#fffaf4", "sidebar": "#f1e9dd", "box": "#fffaf4", "border": "#ccb9a3"},
+        "typography": {"font": "serif", "titleSize": 38, "headingSize": 12, "textSize": 9.75, "weight": 400, "lineHeight": 1.53, "letterSpacing": 0},
+        "page": {"margin": 16, "sectionGap": 6, "columns": 2, "asideWidth": 30, "asideSide": "right", "align": "left", "header": "band", "separators": "line"}
+      }
+    },
+    {
+      "id": "editorial-rubrica", "name": "Rubrica", "family": "editorial",
+      "layout": "timeline", "description": "Date evidenziate e appunti a sinistra",
+      "design": {
+        "colors": {"accent": "#7a3640", "text": "#362731", "title": "#361e2b", "background": "#fffdfd", "sidebar": "#f3e7ea", "box": "#fffdfd", "border": "#c6a5ad"},
+        "typography": {"font": "mono", "titleSize": 34, "headingSize": 11.5, "textSize": 9, "weight": 400, "lineHeight": 1.45, "letterSpacing": 0},
+        "page": {"margin": 15, "sectionGap": 5.5, "columns": 2, "asideWidth": 31, "asideSide": "left", "align": "left", "header": "offset", "separators": "none"}
+      }
+    },
+    {
+      "id": "editorial-pagina", "name": "Pagina", "family": "editorial",
+      "layout": "folio", "description": "Titolo tipografico e rubriche a margine",
+      "design": {
+        "colors": {"accent": "#524338", "text": "#352e28", "title": "#281e19", "background": "#fffdf8", "sidebar": "#f2ede4", "box": "#fffdf8", "border": "#cab9ad"},
+        "typography": {"font": "serif", "titleSize": 42, "headingSize": 12, "textSize": 10, "weight": 400, "lineHeight": 1.55, "letterSpacing": -0.15},
+        "page": {"margin": 19, "sectionGap": 6, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "center", "separators": "none"}
+      }
+    },
+    {
+      "id": "creative-forma", "name": "Forma", "family": "creative",
+      "layout": "masthead", "portrait": "square", "portraitPosition": "right", "description": "Copertina verde, ritratto e riquadri geometrici",
+      "design": {
+        "colors": {"accent": "#175e45", "text": "#1e322b", "title": "#123421", "background": "#fbfefa", "sidebar": "#dceee1", "box": "#fbfefa", "border": "#a7c5b6"},
+        "typography": {"font": "sans", "titleSize": 43, "headingSize": 12.5, "textSize": 9.75, "weight": 400, "lineHeight": 1.44, "letterSpacing": -0.2},
+        "page": {"margin": 13, "sectionGap": 6, "columns": 2, "asideWidth": 36, "asideSide": "right", "align": "left", "header": "band", "separators": "accent"}
+      }
+    },
+    {
+      "id": "creative-tela", "name": "Tela", "family": "creative",
+      "layout": "portrait-feature", "portrait": "arch", "portraitPosition": "left", "description": "Ritratto ad arco e testata color prugna",
+      "design": {
+        "colors": {"accent": "#773b67", "text": "#432c43", "title": "#4b2747", "background": "#fffafc", "sidebar": "#f3e3ec", "box": "#fffafc", "border": "#c39db8"},
+        "typography": {"font": "serif", "titleSize": 43, "headingSize": 12, "textSize": 9.75, "weight": 400, "lineHeight": 1.42, "letterSpacing": -0.15},
+        "page": {"margin": 14, "sectionGap": 4.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "band", "separators": "line"}
+      }
+    },
+    {
+      "id": "creative-scala", "name": "Scala", "family": "creative",
+      "layout": "modules", "description": "Composizione modulare a sinistra con accenti ocra",
+      "design": {
+        "colors": {"accent": "#76501e", "text": "#302c2d", "title": "#232c47", "background": "#fffdf5", "sidebar": "#f1e9d2", "box": "#fffdf5", "border": "#c0a56d"},
+        "typography": {"font": "mono", "titleSize": 35, "headingSize": 11, "textSize": 9.25, "weight": 400, "lineHeight": 1.47, "letterSpacing": 0},
+        "page": {"margin": 12, "sectionGap": 4.5, "columns": 2, "asideWidth": 37, "asideSide": "left", "align": "left", "header": "band", "separators": "none"}
+      }
+    },
+    {
+      "id": "creative-onda", "name": "Onda", "family": "creative",
+      "layout": "swatch", "description": "Testata arrotondata e sezioni su riquadri rosa",
+      "design": {
+        "colors": {"accent": "#873e4a", "text": "#382b3f", "title": "#4f2b46", "background": "#fffcff", "sidebar": "#f0e6f1", "box": "#faf2f6", "border": "#c8a5ba"},
+        "typography": {"font": "sans", "titleSize": 37, "headingSize": 12, "textSize": 9.75, "weight": 400, "lineHeight": 1.46, "letterSpacing": 0},
+        "page": {"margin": 15, "sectionGap": 4.5, "columns": 1, "asideWidth": 32, "asideSide": "right", "align": "left", "header": "center", "separators": "none"}
       }
     }
   ]

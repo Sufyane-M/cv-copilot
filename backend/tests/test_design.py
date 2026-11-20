@@ -1,6 +1,9 @@
+from collections import Counter
+
 import pytest
 
 from backend.app import create_app
+from backend.design import REGISTRY
 
 
 @pytest.fixture
@@ -89,3 +92,25 @@ def test_accettazione_ai_conserva_design_e_profilo(cv):
     assert client.get(url).json['content'] == {
         **snapshot, 'sections': [{**SECTION, 'text': proposal['new_text']}],
     }
+
+
+def test_tutti_i_template_si_salvano_senza_perdere_il_contenuto(cv):
+    client, url = cv
+    templates = REGISTRY['templates']
+    assert len(templates) == 24
+    assert Counter(entry['family'] for entry in templates) == {
+        family: 4 for family in ('classic', 'modern', 'minimal', 'sidebar', 'editorial', 'creative')
+    }
+    assert len({entry['id'] for entry in templates}) == len(templates)
+    assert len({entry['name'] for entry in templates}) == len(templates)
+
+    original = {'sections': [SECTION], 'profile': {'role': 'Sviluppatrice'}}
+    for expected_version, template in enumerate(templates, start=1):
+        response = save(client, url, expected_version, {
+            **original, 'design': {'templateId': template['id']},
+        })
+        assert response.status_code == 200, (template['id'], response.json)
+        assert response.json['content'] == {
+            **original, 'design': {'templateId': template['id'], **template['design'], 'blocks': {}},
+        }
+    assert client.get(url).json['version_number'] == 25

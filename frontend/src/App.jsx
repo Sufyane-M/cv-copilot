@@ -7,6 +7,9 @@ import CvListView from './views/CvListView.jsx'
 import ManualEditor from './views/ManualEditor.jsx'
 import HistoryView from './views/HistoryView.jsx'
 import WorkspaceDialog from './components/WorkspaceDialog.jsx'
+import TemplateGallery from './document/TemplateGallery.jsx'
+import { getTemplate } from './document/CvDocument.mjs'
+import { applyTemplate } from './document/templateSample.mjs'
 import './history.css'
 
 export default function App() {
@@ -49,6 +52,7 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   const [content, setContent] = useState(cv.content)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
+  const [showTemplates, setShowTemplates] = useState(false)
   const [error, setError] = useState(null)
   const dirty = JSON.stringify(content) !== JSON.stringify(cv.content)
   const pdf = useCvPdf(cv, dirty ? content : null, pane === 'pdf')
@@ -111,6 +115,12 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     <div className="actions">
       <button type="button" className="button" aria-pressed={pane === 'edit'} onClick={() => setPane('edit')}>Modifica</button>
       <button type="button" className="button" aria-pressed={pane === 'pdf'} onClick={() => setPane('pdf')}>Anteprima PDF</button>
+      <button type="button" className="button" disabled={busy} aria-expanded={showTemplates}
+        onClick={() => setShowTemplates(true)}>Template</button>
+      <button type="submit" form="cv-content-form" className="button button-primary" disabled={busy || !dirty || !valid}>
+        {busy ? 'Salvataggio…' : 'Salva'}
+      </button>
+      {dirty && pane === 'edit' && <span className="muted small">Modifiche non salvate</span>}
       {pane === 'pdf' && <>
         <button type="button" className="button" onClick={pdf.refresh}>Aggiorna anteprima</button>
         {pdf.url && <a className="button" href={pdf.url} download={filename}>Scarica PDF</a>}
@@ -118,17 +128,19 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
       </>}
     </div>
     {pane === 'pdf' && <PdfPreview pdf={pdf} filename={filename} draft={dirty} />}
-    <form hidden={pane !== 'edit'} onSubmit={save}>
+    <form id="cv-content-form" hidden={pane !== 'edit'} onSubmit={save}>
       <ManualEditor content={content} limits={limits} onChange={setContent} busy={busy} />
-      <div className="actions">
-        <button type="submit" className="button button-primary" disabled={busy || !dirty || !valid}>
-          {busy ? 'Salvataggio…' : 'Salva'}
-        </button>
-        {dirty && <span className="muted small">Modifiche non salvate</span>}
-      </div>
     </form>
     <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy || dirty}
       onReviewSaved={current => { setCv(current); setContent(current.content) }} />
+    {showTemplates && <TemplateGallery selectedId={getTemplate(content.design?.templateId).id}
+      empty={content.sections.length === 0} onClose={() => setShowTemplates(false)}
+      onSelect={(template, portrait) => {
+        setContent(applyTemplate(content, template, portrait))
+        setPane('pdf')
+        pdf.refresh()
+        setShowTemplates(false)
+      }} />}
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
     </WorkspaceDialog>}
