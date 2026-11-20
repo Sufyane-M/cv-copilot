@@ -1,10 +1,10 @@
 from pathlib import Path
 import sqlite3
 
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
-from . import db
+from . import cv_service, db, validation
 from .validation import ApiError
 
 
@@ -27,6 +27,12 @@ def create_app(test_config: dict | None = None) -> Flask:
     with app.app_context():
         db.init_db()
     return app
+
+
+def body(required: set, optional: set = frozenset()) -> dict:
+    if not request.is_json:
+        raise ApiError('unsupported_media_type', 'Invia il corpo della richiesta come JSON.', 415)
+    return validation.fields(request.get_json(), required, optional)
 
 
 def register_routes(app: Flask) -> None:
@@ -68,3 +74,49 @@ def register_routes(app: Flask) -> None:
             return {'error': {'code': 'database_busy', 'message': 'Il database è occupato. Riprova tra poco.'}}, 503, {'Retry-After': '2'}
         app.logger.error('Operazione SQLite non riuscita (%s).', getattr(error, 'sqlite_errorname', type(error).__name__))
         return {'error': {'code': 'internal_error', 'message': 'Non è stato possibile completare l’operazione.'}}, 500
+
+    @app.url_value_preprocessor
+    def check_path_ids(_endpoint, values):
+        if values and any(not 1 <= value <= validation.MAX_VERSION_NUMBER for value in values.values()):
+            raise ApiError('resource_not_found', 'Risorsa non trovata.', 404)
+
+
+    @app.get('/api/cvs')
+    def list_cvs():
+        return jsonify(cv_service.list_cvs())
+
+
+    @app.post('/api/cvs')
+    def create_cv():
+        payload = body({'title'}, {'from_example'})
+        from_example = payload.get('from_example', False)
+        if type(from_example) is not bool:
+            raise ApiError('invalid_input', 'from_example deve essere un booleano.')
+        cv, created = cv_service.create_cv(validation.cv_title(payload['title']), from_example)
+        return cv, 201 if created else 200
+
+
+    @app.get('/api/cvs/<int:cv_id>')
+    def read_cv(cv_id):
+        return cv_service.get_cv(cv_id)
+
+
+    @app.patch('/api/cvs/<int:cv_id>')
+    def rename_cv(cv_id):
+        payload = body({'title'})
+        return cv_service.rename_cv(cv_id, validation.cv_title(payload['title']))
+
+
+    @app.delete('/api/cvs/<int:cv_id>')
+    def delete_cv(cv_id):
+        cv_service.delete_cv(cv_id)
+        return '', 204
+
+    @app.get('/api/config')
+    def get_config():
+        return {'llm_mode': 'mock', 'llm_configured': True, 'limits': {
+            'title': validation.MAX_TITLE,
+            'sections': validation.MAX_SECTIONS,
+            'section_title': validation.MAX_SECTION_TITLE,
+            'section_text': validation.MAX_SECTION_TEXT,
+        }}

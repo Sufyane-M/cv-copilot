@@ -15,7 +15,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 01 Fondamenta
 - [x] 02 Backend essenziale
 - [x] 03 Persistenza
-- [ ] 04 API dei curriculum
+- [x] 04 API dei curriculum
 - [ ] 05 Frontend iniziale
 - [ ] 06 Sezioni e modifica manuale
 - [ ] 07 Versionamento
@@ -38,3 +38,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **01 Fondamenta** — Cartella separata, branch main, esclusioni, configurazione mock e piano. Verificati identità Git, contenuto iniziale indicizzato e porte locali 5001 e 5174. Prossima fase: avvio Flask e risposte JSON.
 - **02** — Factory Flask, controllo /api/health e risposte JSON. Riutilizzati i gestori HTTP del riferimento. Verifica: Due test su avvio, 404 JSON e protezione Origin. Prossimo passo: SQLite, schema e dati sintetici.
 - **03** — Schema per CV e snapshot con SQLite indipendente. Riusati connessione, transazioni e fixture sintetica del riferimento. Verifica: Inizializzazione reale nel nuovo progetto, chiavi esterne, idempotenza e rollback. Prossimo passo: Operazioni dell’archivio e validazione.
+- **04** — CRUD con archivio persistente, versione iniziale e esempio idempotente. Riusate le query e i limiti del riferimento. Verifica: Creazione, riavvio, rinomina, cancellazione, input e ID invalidi. Prossimo passo: Archivio React e proxy Vite.
