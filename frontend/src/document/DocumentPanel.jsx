@@ -7,7 +7,7 @@ import { applyTemplate } from './templateSample.mjs'
 import './panel.css'
 
 export default function DocumentPanel({
-  cv, mode, onMode, content, limits, busy, dirty, onChange, onSave,
+  cv, mode, onMode, content, limits, busy, dirty, onChange, onSave, onDiscard, canUndo, canRedo, onUndo, onRedo,
 }) {
   const [showTemplates, setShowTemplates] = useState(false)
   const [inspectorOpen, setInspectorOpen] = useState(false)
@@ -57,6 +57,11 @@ export default function DocumentPanel({
             : ''}
           {!valid && ' · Compila i titoli prima di salvare'}
         </span>
+        {mode === 'edit' && <div className="document-history-actions">
+          <button type="button" className="button button-small" onClick={onUndo} disabled={!canUndo || busy || processingPhoto}>Annulla</button>
+          <button type="button" className="button button-small" onClick={onRedo} disabled={!canRedo || busy || processingPhoto}>Ripeti</button>
+          {dirty && <button type="button" className="button button-small" disabled={busy || processingPhoto} onClick={onDiscard}>Scarta bozza</button>}
+        </div>}
         {mode === 'pdf' && <div className="document-history-actions">
           <button type="button" className="button button-small" disabled={pdf.loading} onClick={pdf.refresh}>Aggiorna anteprima</button>
           {pdf.url && <a className="icon-link" href={pdf.url} target="_blank" rel="noreferrer"

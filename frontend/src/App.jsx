@@ -3,6 +3,7 @@ import ReviewView from './views/ReviewView.jsx'
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
 import { Notice } from './components/common.jsx'
+import { changeDraft, redoDraft, sameContent, undoDraft } from './document/draft.mjs'
 import CvListView from './views/CvListView.jsx'
 import HistoryView from './views/HistoryView.jsx'
 import WorkspaceDialog from './components/WorkspaceDialog.jsx'
@@ -45,11 +46,28 @@ export default function App() {
 
 function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   const [pane, setPane] = useState('edit')
-  const [content, setContent] = useState(cv.content)
+  const [draft, setDraft] = useState(null)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [error, setError] = useState(null)
-  const dirty = JSON.stringify(content) !== JSON.stringify(cv.content)
+  const content = draft?.content ?? cv.content
+  const dirty = !sameContent(content, cv.content)
+
+  useEffect(() => {
+    if (!dirty) return
+    function confirmLeave(event) {
+      event.preventDefault()
+      event.returnValue = ''
+    }
+    window.addEventListener('beforeunload', confirmLeave)
+    return () => window.removeEventListener('beforeunload', confirmLeave)
+  }, [dirty])
+
+  function discard() {
+    if (!window.confirm('Scartare le modifiche non salvate al documento?')) return
+    setDraft(null)
+    setError(null)
+  }
   async function runDocumentChange(request) {
     if (busy) return false
     setBusy(true)
@@ -57,7 +75,7 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     try {
       const saved = await request()
       setCv(saved)
-      setContent(saved.content)
+      setDraft(null)
       return true
     } catch (failure) {
       setError(failure)
@@ -68,7 +86,7 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   }
 
   function save() {
-    if (dirty) void runDocumentChange(() => api.save(cv.id, content, cv.version_number))
+    if (dirty) void runDocumentChange(() => api.save(cv.id, content, draft.baseVersion))
   }
 
   async function restore(number) {
@@ -102,9 +120,12 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     </div>
     {!showHistory && notice}
     <DocumentPanel cv={cv} mode={pane} onMode={setPane} content={content} limits={limits}
-      busy={busy} dirty={dirty} onChange={setContent} onSave={save} />
+      busy={busy} dirty={dirty} onChange={(next, group) => setDraft(previous => changeDraft(previous, cv, next, group))}
+      onSave={save} onDiscard={discard}
+      canUndo={Boolean(draft?.past.length)} canRedo={Boolean(draft?.future.length)}
+      onUndo={() => setDraft(undoDraft)} onRedo={() => setDraft(redoDraft)} />
     <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy || dirty}
-      onReviewSaved={current => { setCv(current); setContent(current.content) }} />
+      onReviewSaved={current => { setCv(current); setDraft(null) }} />
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
     </WorkspaceDialog>}
