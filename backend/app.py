@@ -1,8 +1,10 @@
 from pathlib import Path
+import sqlite3
 
 from flask import Flask, request
 from werkzeug.exceptions import HTTPException
 
+from . import db
 from .validation import ApiError
 
 
@@ -12,13 +14,18 @@ ROOT = Path(__file__).resolve().parent
 def create_app(test_config: dict | None = None) -> Flask:
     app = Flask(__name__, instance_path=str(ROOT / 'instance'))
     app.config.from_mapping(
+        DATABASE=str(Path(app.instance_path) / 'cv_copilot.sqlite3'),
         MAX_CONTENT_LENGTH=512 * 1024,
         TRUSTED_HOSTS=['localhost', '127.0.0.1', '[::1]'],
     )
     if test_config is not None:
         app.config.update(test_config)
     app.json.ensure_ascii = False
+    app.teardown_appcontext(db.close_db)
+    app.cli.add_command(db.init_db_command)
     register_routes(app)
+    with app.app_context():
+        db.init_db()
     return app
 
 
@@ -54,3 +61,10 @@ def register_routes(app: Flask) -> None:
         response.set_data(app.json.dumps({'error': {'code': code, 'message': message}}))
         response.mimetype = 'application/json'
         return response
+
+    @app.errorhandler(sqlite3.Error)
+    def database_error(error):
+        if getattr(error, 'sqlite_errorcode', 0) & 0xFF in {sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED}:
+            return {'error': {'code': 'database_busy', 'message': 'Il database è occupato. Riprova tra poco.'}}, 503, {'Retry-After': '2'}
+        app.logger.error('Operazione SQLite non riuscita (%s).', getattr(error, 'sqlite_errorname', type(error).__name__))
+        return {'error': {'code': 'internal_error', 'message': 'Non è stato possibile completare l’operazione.'}}, 500

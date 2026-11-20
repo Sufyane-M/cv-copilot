@@ -1,0 +1,34 @@
+{
+  "sections": [
+    {
+      "id": "profile",
+      "type": "summary",
+      "title": "Profilo",
+      "text": "Frequento il terzo anno di Informatica. Mi interessa lo sviluppo web. Ho lavorato su applicazioni con Python, Flask e SQLite durante il corso."
+    },
+    {
+      "id": "library-project",
+      "type": "projects",
+      "title": "Catalogo di biblioteca",
+      "text": "Progetto universitario, 2026. Ho sviluppato API Flask per aggiungere, cercare e aggiornare i libri. Ho salvato il catalogo in SQLite e provato le operazioni CRUD con dati sintetici."
+    },
+    {
+      "id": "lab-experience",
+      "type": "experience",
+      "title": "Supporto al laboratorio studentesco",
+      "text": "Laboratorio didattico, 2025. Ho preparato esercizi introduttivi su HTML e CSS. Ho aiutato i partecipanti a individuare errori nei moduli e negli eventi JavaScript."
+    },
+    {
+      "id": "education",
+      "type": "education",
+      "title": "Formazione",
+      "text": "Laurea triennale in Informatica, in corso dal 2024. Insegnamenti di riferimento: Basi di Dati, Programmazione e Tecnologie Web."
+    },
+    {
+      "id": "skills",
+      "type": "skills",
+      "title": "Competenze",
+      "text": "Python, JavaScript, HTML, CSS, SQL, Flask e Git."
+    }
+  ]
+}
