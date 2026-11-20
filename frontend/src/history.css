@@ -68,3 +68,7 @@
   .history-view, .history-comparison-pair { grid-template-columns: minmax(0, 1fr); }
   .history-versions { max-height: 11rem; }
 }
+
+.pdf-stage { min-height: 420px; display: grid; margin: 12px 0; background: #f0f4f2; }
+.pdf-frame { width: 100%; height: min(72vh, 760px); border: 0; }
+.pdf-placeholder { place-self: center; margin: 16px; text-align: center; }

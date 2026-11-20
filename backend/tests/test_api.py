@@ -371,3 +371,19 @@ def test_migrazione_attribuzione_conserva_storico_e_supporta_demo(tmp_path):
     assert last["llm_mode"] == "mock"
     assert last["requested_model_id"] is None and last["actual_model_id"] is None
     assert restarted.get("/api/cvs/1").json["version_number"] == 1
+
+def test_openrouter_senza_chiave_lascia_accessibili_cv_e_pdf(app, saved_cv):
+    def unexpected(_request):
+        pytest.fail("L’app non deve contattare OpenRouter senza chiave")
+
+    client = create_app({
+        "TESTING": True, "DATABASE": app.config["DATABASE"], "LLM_MODE": "openrouter",
+        "OPENROUTER_API_KEY": "", "OPENROUTER_TRANSPORT": httpx.MockTransport(unexpected),
+    }).test_client()
+    assert client.get("/api/config").json["llm_configured"] is False
+    assert error_code(client.get("/api/models")) == "llm_not_configured"
+    failed = request_review(client, saved_cv, model_id="test/modello")
+    assert failed.status_code == 503 and error_code(failed) == "llm_not_configured"
+    assert client.get(f"{saved_cv}/chat").json["messages"] == []
+    assert client.get(saved_cv).status_code == 200
+    assert client.get(f"{saved_cv}/pdf").data.startswith(b"%PDF-")

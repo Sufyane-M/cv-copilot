@@ -1,21 +1,36 @@
+import base64
+import binascii
 import re
 
 
+
 MAX_TITLE = 100
-MAX_REASON = 600
-MAX_ASSISTANT_TEXT = 2000
-MAX_MODEL_ID = 256
-MAX_MESSAGE = 1000
-MAX_JOB_POSTING = 4000
 MAX_SECTIONS = 16
 MAX_SECTION_TITLE = 100
 MAX_SECTION_TEXT = 2000
 MAX_SECTION_SUBTITLE = 120
 MAX_SECTION_PERIOD = 48
+MAX_PROFILE_PHOTO_BYTES = 256 * 1024
+MAX_MESSAGE = 1000
+MAX_JOB_POSTING = 4000
+MAX_REASON = 600
+MAX_ASSISTANT_TEXT = 2000
+MAX_MODEL_ID = 256
 MAX_VERSION_NUMBER = 2**63 - 1
 SECTION_TYPES = {'summary', 'experience', 'education', 'skills', 'projects', 'other'}
 SECTION_ID = re.compile(r'[a-zA-Z0-9_-]{1,64}')
 INVALID_CHARACTER = re.compile(r'[\x00\ud800-\udfff]')
+PROFILE_FIELDS = {
+    'role': ('Il ruolo', 100),
+    'email': ('L’indirizzo email', 120),
+    'phone': ('Il telefono', 48),
+    'location': ('La località', 100),
+    'website': ('Il sito o il portfolio', 180),
+}
+PHOTO_TYPES = {
+    'data:image/jpeg;base64': (b'\xff\xd8\xff', b'\xff\xd9'),
+    'data:image/png;base64': (b'\x89PNG\r\n\x1a\n', b'\x00\x00\x00\x00IEND\xaeB`\x82'),
+}
 
 
 class ApiError(Exception):
@@ -48,6 +63,10 @@ def cv_title(value) -> str:
     return string(value, 'Il titolo del CV', MAX_TITLE).strip()
 
 
+def model_id(value) -> str:
+    return string(value, 'L’identificativo del modello', MAX_MODEL_ID).strip()
+
+
 def section_id(value) -> str:
     if not isinstance(value, str) or SECTION_ID.fullmatch(value) is None:
         raise ApiError('invalid_input', 'Identificativo della sezione non valido.')
@@ -60,8 +79,44 @@ def version_number(value) -> int:
     return value
 
 
+def profile_photo(value) -> str:
+    invalid = ApiError('invalid_input', 'La foto deve essere un’immagine JPEG o PNG.')
+    too_large = ApiError('invalid_input', 'La foto del profilo può occupare al massimo 256 KiB.')
+    if value == '':
+        return value
+    if not isinstance(value, str):
+        raise invalid
+    media_type, _, encoded = value.partition(',')
+    if media_type not in PHOTO_TYPES or not encoded:
+        raise invalid
+    if len(encoded) > (MAX_PROFILE_PHOTO_BYTES + 2) // 3 * 4:
+        raise too_large
+    try:
+        image = base64.b64decode(encoded, validate=True)
+    except (binascii.Error, ValueError) as error:
+        raise invalid from error
+    if len(image) > MAX_PROFILE_PHOTO_BYTES:
+        raise too_large
+    signature, terminator = PHOTO_TYPES[media_type]
+    if not image.startswith(signature) or not image.endswith(terminator):
+        raise invalid
+    # Conserviamo solo immagini locali serializzate. Il renderer PDF non deve risolvere URL esterni.
+    return f'{media_type},{base64.b64encode(image).decode("ascii")}'
+
+
+def document_profile(value) -> dict:
+    fields(value, set(), set(PROFILE_FIELDS) | {'photo'})
+    profile = {
+        field: string(value[field], label, limit, allow_empty=True).strip()
+        for field, (label, limit) in PROFILE_FIELDS.items() if field in value
+    }
+    if 'photo' in value:
+        profile['photo'] = profile_photo(value['photo'])
+    return profile
+
+
 def content(value) -> dict:
-    fields(value, {'sections'}, {'document_title'})
+    fields(value, {'sections'}, {'document_title', 'profile'})
     sections = value['sections']
     if not isinstance(sections, list) or len(sections) > MAX_SECTIONS:
         raise ApiError('invalid_input', f'Il CV può contenere al massimo {MAX_SECTIONS} sezioni.')
@@ -91,10 +146,9 @@ def content(value) -> dict:
     result = {'sections': normalized}
     if 'document_title' in value:
         result['document_title'] = string(value['document_title'], 'Il titolo del documento', MAX_TITLE).strip()
+    if 'profile' in value:
+        result['profile'] = document_profile(value['profile'])
     return result
-
-def model_id(value) -> str:
-    return string(value, 'L’identificativo del modello', MAX_MODEL_ID).strip()
 
 
 def proposal_text(value) -> str:

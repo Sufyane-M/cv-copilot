@@ -38,22 +38,31 @@ async function request(path, { method = 'GET', body, signal, pdf = false } = {})
 }
 
 export const api = {
-  models: signal => request('/models', { signal }),
-  config: signal => request('/config', { signal }),
-  cvs: signal => request('/cvs', { signal }),
-  cv: (id, signal) => request('/cvs/' + id, { signal }),
-  create: body => request('/cvs', { method: 'POST', body }),
-  rename: (id, title) => request('/cvs/' + id, { method: 'PATCH', body: { title } }),
-  remove: id => request('/cvs/' + id, { method: 'DELETE' }),
-  save: (id, content, version) => request('/cvs/' + id + '/content', {
-    method: 'PUT', body: { content, expected_version: version },
+  config: (signal) => request('/config', { signal }),
+  models: (signal) => request('/models', { signal }),
+  cvs: (signal) => request('/cvs', { signal }),
+  cv: (id, signal) => request(`/cvs/${id}`, { signal }),
+  pdf: (id, signal) => request(`/cvs/${id}/pdf`, { signal, pdf: true }),
+  previewPdf: (id, content, signal) => request(`/cvs/${id}/pdf/preview`, {
+    method: 'POST', body: { content }, signal, pdf: true,
   }),
-  versions: (id, signal) => request('/cvs/' + id + '/versions', { signal }),
-  version: (id, number, signal) => request('/cvs/' + id + '/versions/' + number, { signal }),
-  restore: (id, number, version) => request('/cvs/' + id + '/versions/' + number + '/restore', {
-    method: 'POST', body: { expected_version: version },
-  }),
-  chat: (id, signal) => request('/cvs/' + id + '/chat', { signal }),
-  sendReview: (id, body) => request('/cvs/' + id + '/chat', { method: 'POST', body }),
-  resolveProposal: (id, proposalId, action) => request('/cvs/' + id + '/proposals/' + proposalId + '/' + action, { method: 'POST' }),
+  create: (body) => request('/cvs', { method: 'POST', body }),
+  rename: (id, title) => request(`/cvs/${id}`, { method: 'PATCH', body: { title } }),
+  remove: (id) => request(`/cvs/${id}`, { method: 'DELETE' }),
+  save: (id, content, version) =>
+    request(`/cvs/${id}/content`, {
+      method: 'PUT',
+      body: { content, expected_version: version },
+    }),
+  versions: (id, signal) => request(`/cvs/${id}/versions`, { signal }),
+  version: (id, number, signal) => request(`/cvs/${id}/versions/${number}`, { signal }),
+  restore: (id, number, version) =>
+    request(`/cvs/${id}/versions/${number}/restore`, {
+      method: 'POST',
+      body: { expected_version: version },
+    }),
+  chat: (id, signal) => request(`/cvs/${id}/chat`, { signal }),
+  sendReview: (id, body) => request(`/cvs/${id}/chat`, { method: 'POST', body }),
+  resolveProposal: (id, proposalId, decision) =>
+    request(`/cvs/${id}/proposals/${proposalId}/${decision}`, { method: 'POST' }),
 }

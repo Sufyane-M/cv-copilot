@@ -1,3 +1,4 @@
+import PdfPreview, { useCvPdf, pdfFilename } from './components/PdfPreview.jsx'
 import ReviewView from './views/ReviewView.jsx'
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
@@ -44,11 +45,14 @@ export default function App() {
 }
 
 function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
+  const [pane, setPane] = useState('edit')
   const [content, setContent] = useState(cv.content)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [error, setError] = useState(null)
   const dirty = JSON.stringify(content) !== JSON.stringify(cv.content)
+  const pdf = useCvPdf(cv, dirty ? content : null, pane === 'pdf')
+  const filename = pdfFilename(cv.title, dirty)
   const valid = content.sections.every(section => section.title.trim())
     && (content.document_title === undefined || Boolean(content.document_title.trim()))
 
@@ -104,7 +108,17 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
       </div>
     </div>
     {!showHistory && notice}
-    <form onSubmit={save}>
+    <div className="actions">
+      <button type="button" className="button" aria-pressed={pane === 'edit'} onClick={() => setPane('edit')}>Modifica</button>
+      <button type="button" className="button" aria-pressed={pane === 'pdf'} onClick={() => setPane('pdf')}>Anteprima PDF</button>
+      {pane === 'pdf' && <>
+        <button type="button" className="button" onClick={pdf.refresh}>Aggiorna anteprima</button>
+        {pdf.url && <a className="button" href={pdf.url} download={filename}>Scarica PDF</a>}
+        <span className="muted small">{dirty ? 'Bozza non salvata' : 'Versione salvata'}</span>
+      </>}
+    </div>
+    {pane === 'pdf' && <PdfPreview pdf={pdf} filename={filename} draft={dirty} />}
+    <form hidden={pane !== 'edit'} onSubmit={save}>
       <ManualEditor content={content} limits={limits} onChange={setContent} busy={busy} />
       <div className="actions">
         <button type="submit" className="button button-primary" disabled={busy || !dirty || !valid}>

@@ -1,0 +1,58 @@
+{
+  "defaultTemplate": "classic-roma",
+  "families": {
+    "classic": {
+      "name": "Classic",
+      "supportsColumns": false
+    }
+  },
+  "defaultBlock": {
+    "width": 100,
+    "minHeight": 0,
+    "padding": 0,
+    "background": "",
+    "border": "inherit",
+    "color": "",
+    "textSize": 0,
+    "column": "auto"
+  },
+  "templates": [
+    {
+      "id": "classic-roma",
+      "name": "Roma",
+      "family": "classic",
+      "layout": "signature",
+      "description": "Serif, fregio sottile e percorso lineare",
+      "design": {
+        "colors": {
+          "accent": "#21473d",
+          "text": "#2a362f",
+          "title": "#182d28",
+          "background": "#fffffd",
+          "sidebar": "#e9f0eb",
+          "box": "#fffffd",
+          "border": "#b5c7bc"
+        },
+        "typography": {
+          "font": "serif",
+          "titleSize": 39,
+          "headingSize": 11,
+          "textSize": 9.5,
+          "weight": 400,
+          "lineHeight": 1.45,
+          "letterSpacing": 0
+        },
+        "page": {
+          "margin": 16,
+          "sectionGap": 6,
+          "columns": 1,
+          "asideWidth": 32,
+          "asideSide": "right",
+          "align": "left",
+          "header": "left",
+          "separators": "line"
+        }
+      }
+    }
+  ]
+}

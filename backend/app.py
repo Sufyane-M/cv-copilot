@@ -4,10 +4,11 @@ from pathlib import Path
 import sqlite3
 
 from dotenv import dotenv_values
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from werkzeug.exceptions import HTTPException
 
 from . import cv_service, db, llm, validation
+from .pdf_document import render_cv_pdf
 from .validation import ApiError
 
 
@@ -56,6 +57,12 @@ def body(required: set, optional: set = frozenset()) -> dict:
     return validation.fields(request.get_json(), required, optional)
 
 
+def pdf_response(cv: dict, filename: str):
+    response = send_file(render_cv_pdf(cv), mimetype='application/pdf', download_name=filename)
+    response.cache_control.no_store = True
+    return response
+
+
 def register_routes(app: Flask) -> None:
     @app.get('/api/health')
     def health():
@@ -67,11 +74,14 @@ def register_routes(app: Flask) -> None:
         if request.method in {'POST', 'PUT', 'PATCH', 'DELETE'} and origin and origin != request.host_url.rstrip('/'):
             raise ApiError('invalid_origin', 'Apri il progetto dall’indirizzo del server locale.', 403)
 
+    @app.url_value_preprocessor
+    def check_path_ids(_endpoint, values):
+        if values and any(not 1 <= value <= validation.MAX_VERSION_NUMBER for value in values.values()):
+            raise ApiError('resource_not_found', 'Risorsa non trovata.', 404)
 
     @app.errorhandler(ApiError)
     def api_error(error):
         return {'error': {'code': error.code, 'message': error.message}}, error.status
-
 
     @app.errorhandler(HTTPException)
     def http_error(error):
@@ -96,16 +106,36 @@ def register_routes(app: Flask) -> None:
         app.logger.error('Operazione SQLite non riuscita (%s).', getattr(error, 'sqlite_errorname', type(error).__name__))
         return {'error': {'code': 'internal_error', 'message': 'Non è stato possibile completare l’operazione.'}}, 500
 
-    @app.url_value_preprocessor
-    def check_path_ids(_endpoint, values):
-        if values and any(not 1 <= value <= validation.MAX_VERSION_NUMBER for value in values.values()):
-            raise ApiError('resource_not_found', 'Risorsa non trovata.', 404)
+    @app.get('/api/config')
+    def get_config():
+        mode = app.config['LLM_MODE']
+        return {
+            'llm_mode': mode,
+            'llm_configured': mode == 'mock' or bool(app.config['OPENROUTER_API_KEY']),
+            'limits': {
+                'title': validation.MAX_TITLE,
+                'sections': validation.MAX_SECTIONS,
+                'section_title': validation.MAX_SECTION_TITLE,
+                'section_text': validation.MAX_SECTION_TEXT,
+                'section_subtitle': validation.MAX_SECTION_SUBTITLE,
+                'section_period': validation.MAX_SECTION_PERIOD,
+                'profile_photo_bytes': validation.MAX_PROFILE_PHOTO_BYTES,
+                **{f'profile_{name}': limit for name, (_, limit) in validation.PROFILE_FIELDS.items()},
+                'message': validation.MAX_MESSAGE,
+                'job_posting': validation.MAX_JOB_POSTING,
+            },
+        }
 
+    @app.get('/api/models')
+    def list_models():
+        models = llm.get_models(app.config)
+        configured_default = app.config['OPENROUTER_DEFAULT_MODEL']
+        default_id = configured_default if any(model['id'] == configured_default for model in models) else None
+        return {'models': models, 'default_model_id': default_id}
 
     @app.get('/api/cvs')
     def list_cvs():
         return jsonify(cv_service.list_cvs())
-
 
     @app.post('/api/cvs')
     def create_cv():
@@ -116,17 +146,27 @@ def register_routes(app: Flask) -> None:
         cv, created = cv_service.create_cv(validation.cv_title(payload['title']), from_example)
         return cv, 201 if created else 200
 
-
     @app.get('/api/cvs/<int:cv_id>')
     def read_cv(cv_id):
         return cv_service.get_cv(cv_id)
 
+    @app.get('/api/cvs/<int:cv_id>/pdf')
+    def read_cv_pdf(cv_id):
+        cv = cv_service.get_cv(cv_id)
+        response = pdf_response(cv, f'cv-{cv_id}.pdf')
+        response.headers['X-CV-Version'] = str(cv['version_number'])
+        return response
+
+    @app.post('/api/cvs/<int:cv_id>/pdf/preview')
+    def preview_cv_pdf(cv_id):
+        content = validation.content(body({'content'})['content'])
+        cv = cv_service.get_cv(cv_id)
+        return pdf_response({'title': cv['title'], 'content': content}, f'cv-{cv_id}-bozza.pdf')
 
     @app.patch('/api/cvs/<int:cv_id>')
     def rename_cv(cv_id):
         payload = body({'title'})
         return cv_service.rename_cv(cv_id, validation.cv_title(payload['title']))
-
 
     @app.delete('/api/cvs/<int:cv_id>')
     def delete_cv(cv_id):
@@ -151,20 +191,6 @@ def register_routes(app: Flask) -> None:
         payload = body({'expected_version'})
         return cv_service.restore_version(cv_id, number, validation.version_number(payload['expected_version']))
 
-    @app.get('/api/config')
-    def get_config():
-        mode = app.config['LLM_MODE']
-        return {'llm_mode': mode, 'llm_configured': mode == 'mock' or bool(app.config['OPENROUTER_API_KEY']), 'limits': {
-            'title': validation.MAX_TITLE,
-            'sections': validation.MAX_SECTIONS,
-            'section_title': validation.MAX_SECTION_TITLE,
-            'section_text': validation.MAX_SECTION_TEXT,
-            'message': validation.MAX_MESSAGE,
-            'job_posting': validation.MAX_JOB_POSTING,
-            'section_subtitle': validation.MAX_SECTION_SUBTITLE,
-            'section_period': validation.MAX_SECTION_PERIOD,
-        }}
-
     @app.get('/api/cvs/<int:cv_id>/chat')
     def read_chat(cv_id):
         return cv_service.get_chat(cv_id)
@@ -188,14 +214,6 @@ def register_routes(app: Flask) -> None:
     def accept_proposal(cv_id, proposal_id):
         return cv_service.resolve_proposal(cv_id, proposal_id, accept=True)
 
-
     @app.post('/api/cvs/<int:cv_id>/proposals/<int:proposal_id>/reject')
     def reject_proposal(cv_id, proposal_id):
         return cv_service.resolve_proposal(cv_id, proposal_id, accept=False)
-
-    @app.get('/api/models')
-    def list_models():
-        models = llm.get_models(app.config)
-        configured_default = app.config['OPENROUTER_DEFAULT_MODEL']
-        default_id = configured_default if any(model['id'] == configured_default for model in models) else None
-        return {'models': models, 'default_model_id': default_id}
