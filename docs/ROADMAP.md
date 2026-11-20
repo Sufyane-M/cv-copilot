@@ -31,7 +31,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 17 Bozza e Undo/Redo
 - [x] 18 Coordinamento fra editor e AI
 - [x] 19 Completamento dell’interfaccia
-- [ ] 20 Verifica finale e documentazione
+- [x] 20 Verifica finale e documentazione
 
 ## Registro
 
@@ -54,3 +54,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **17** — Bozza locale con Annulla e Ripeti, digitazione e trascinamenti raggruppati e salvataggio esplicito. Verifica in Chrome che il PDF di bozza usa lo stesso file del download, la bozza resta al ritorno al documento e la versione cresce soltanto con Salva. Tre test frontend e build Vite. Prossimo passo: recupero delle modifiche dopo una proposta AI.
 - **18** — Recupero esplicito della bozza dopo una proposta AI e confronto per sezione se cambiano entrambi i testi. Il recupero mantiene le personalizzazioni e lascia intatti gli snapshot precedenti. Verificate in Chrome entrambe le situazioni con proposte simulate e SQLite isolato. 56 test Flask, sette test frontend e build Vite. Prossimo passo: workspace desktop e mobile.
 - **19** — Workspace con chat a sinistra, documento a destra, pannelli mobile e stato della richiesta associato al CV e al modello di invio. Vite usa il nuovo backend sia in sviluppo sia in preview. Verifica in Chrome del layout, del cambio CV durante la richiesta, del modello ricordato e del testo conservato dopo un errore simulato. Dieci test frontend, inclusi foto e risposta PDF in ritardo, build e prova del proxy con PDF dopo approvazione. Prossimo passo: verifica finale e materiale per la discussione.
+- **20** — Verifica di parità e materiali d’esame aggiornati. Guida al codice, traccia di 9:30 e otto slide PDF. Verifica: 67 test pytest, 13 test frontend e build Vite. Chrome desktop e mobile con SQLite isolato. Confronto editor–PDF in tre casi (una colonna, sidebar, sei pagine con tutte le 224 righe). Catalogo, recupero dopo 402, persistenza e attribuzione verificati con HTTPX MockTransport. Controllati Flask e proxy sulle porte 5001 e 5174. Prossimo passo: Uso locale in modalità mock. Per provare OpenRouter effettivo configura la chiave nel nuovo backend/.env.
