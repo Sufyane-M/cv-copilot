@@ -7,7 +7,8 @@ import { applyTemplate } from './templateSample.mjs'
 import './panel.css'
 
 export default function DocumentPanel({
-  cv, mode, onMode, content, limits, busy, dirty, stale, onChange, onSave, onDiscard, canUndo, canRedo, onUndo, onRedo,
+  cv, mode, onMode, content, limits, busy, dirty, stale, savedVersion,
+  onChange, onSave, onDiscard, canUndo, canRedo, onUndo, onRedo, requestedSectionId,
 }) {
   const [showTemplates, setShowTemplates] = useState(false)
   const [inspectorOpen, setInspectorOpen] = useState(false)
@@ -54,7 +55,7 @@ export default function DocumentPanel({
         </span>
         <span role="status" className={dirty ? 'document-dirty' : 'muted'}>
           {processingPhoto ? 'Elaborazione della foto…'
-            : ''}
+            : !dirty && savedVersion === cv.version_number ? `Versione ${savedVersion} salvata` : ''}
           {!valid && ' · Compila i titoli prima di salvare'}
         </span>
         {mode === 'edit' && <div className="document-history-actions">
@@ -74,7 +75,7 @@ export default function DocumentPanel({
         ? <VisualEditor title={cv.title} content={content} limits={limits} busy={busy} onChange={onChange}
           onPhotoProcessing={setProcessingPhoto}
           inspectorOpen={inspectorOpen} onShowInspector={() => setInspectorOpen(true)}
-          onCloseInspector={() => setInspectorOpen(false)} />
+          onCloseInspector={() => setInspectorOpen(false)} requestedSectionId={requestedSectionId} />
         : <PdfPreview pdf={pdf} filename={filename} draft={dirty} />}
     </section>
   )

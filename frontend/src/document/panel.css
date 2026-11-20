@@ -22,6 +22,3 @@
   .document-status > span[role='status'] { min-width: 0; overflow-wrap: anywhere; }
 
 }
-
-.selected-cv > .document-panel { min-height: 380px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.selected-cv .pdf-stage { height: min(72vh, 820px); }

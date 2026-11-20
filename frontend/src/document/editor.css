@@ -187,6 +187,3 @@
   .visual-context { padding-inline: .48rem; }
   .design-group { grid-template-columns: minmax(0, 1fr); }
 }
-
-.visual-editor { min-height: 370px; }
-.visual-canvas { max-height: 64vh; }
