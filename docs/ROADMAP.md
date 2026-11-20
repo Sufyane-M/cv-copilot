@@ -16,7 +16,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 02 Backend essenziale
 - [x] 03 Persistenza
 - [x] 04 API dei curriculum
-- [ ] 05 Frontend iniziale
+- [x] 05 Frontend iniziale
 - [ ] 06 Sezioni e modifica manuale
 - [ ] 07 Versionamento
 - [ ] 08 Chat in modalità simulata
@@ -39,3 +39,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **02** — Factory Flask, controllo /api/health e risposte JSON. Riutilizzati i gestori HTTP del riferimento. Verifica: Due test su avvio, 404 JSON e protezione Origin. Prossimo passo: SQLite, schema e dati sintetici.
 - **03** — Schema per CV e snapshot con SQLite indipendente. Riusati connessione, transazioni e fixture sintetica del riferimento. Verifica: Inizializzazione reale nel nuovo progetto, chiavi esterne, idempotenza e rollback. Prossimo passo: Operazioni dell’archivio e validazione.
 - **04** — CRUD con archivio persistente, versione iniziale e esempio idempotente. Riusate le query e i limiti del riferimento. Verifica: Creazione, riavvio, rinomina, cancellazione, input e ID invalidi. Prossimo passo: Archivio React e proxy Vite.
+- **05** — Archivio React con Fetch, creazione, apertura, rinomina e cancellazione. Riusati la vista archivio e i controlli condivisi. Verifica: Build Vite e creazione/riapertura in Chrome attraverso le porte 5174 e 5001. Prossimo passo: Modifica e ordinamento delle sezioni.

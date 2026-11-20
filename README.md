@@ -17,3 +17,7 @@ Dalla radice del progetto, in PowerShell.
     .\.venv\Scripts\python.exe -m flask --app backend.app run --host 127.0.0.1 --port 5001
 
 Il controllo di avvio è disponibile in `GET /api/health`. Il repository locale segue `main` su GitHub.
+
+## Avvio dell’interfaccia
+
+Dal secondo terminale entra in frontend, esegui npm ci e npm run dev. Apri http://127.0.0.1:5174. Il proxy indirizza /api a Flask sulla porta 5001.
