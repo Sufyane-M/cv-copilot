@@ -112,6 +112,11 @@ def register_routes(app: Flask) -> None:
         cv_service.delete_cv(cv_id)
         return '', 204
 
+    @app.put('/api/cvs/<int:cv_id>/content')
+    def save_content(cv_id):
+        payload = body({'expected_version', 'content'})
+        return cv_service.save_content(cv_id, validation.version_number(payload['expected_version']), validation.content(payload['content']))
+
     @app.get('/api/config')
     def get_config():
         return {'llm_mode': 'mock', 'llm_configured': True, 'limits': {
@@ -119,4 +124,6 @@ def register_routes(app: Flask) -> None:
             'sections': validation.MAX_SECTIONS,
             'section_title': validation.MAX_SECTION_TITLE,
             'section_text': validation.MAX_SECTION_TEXT,
+            'section_subtitle': validation.MAX_SECTION_SUBTITLE,
+            'section_period': validation.MAX_SECTION_PERIOD,
         }}

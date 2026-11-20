@@ -49,6 +49,12 @@ def section_id(value) -> str:
     return value
 
 
+def version_number(value) -> int:
+    if type(value) is not int or not 1 <= value <= MAX_VERSION_NUMBER:
+        raise ApiError('invalid_input', 'La versione attesa deve essere un intero positivo valido.')
+    return value
+
+
 def content(value) -> dict:
     fields(value, {'sections'}, {'document_title'})
     sections = value['sections']

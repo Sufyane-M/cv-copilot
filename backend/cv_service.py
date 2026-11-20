@@ -84,3 +84,19 @@ def delete_cv(cv_id: int) -> None:
     cursor = get_db().execute('DELETE FROM cv WHERE id = ?', (cv_id,))
     if cursor.rowcount == 0:
         raise ApiError('cv_not_found', 'Questo CV non esiste più.', 404)
+
+
+def require_expected_version(cv: dict, expected_version: int) -> None:
+    # La bozza potrebbe essere stata aperta prima di una modifica in un'altra scheda.
+    if cv['version_number'] != expected_version:
+        raise ApiError('version_conflict', 'Il CV è cambiato. Ricarica la versione corrente e riprova.', 409)
+
+
+def save_content(cv_id: int, expected_version: int, content: dict) -> dict:
+    with transaction(get_db(), write=True):
+        cv = get_cv(cv_id)
+        require_expected_version(cv, expected_version)
+        if cv['content'] == content:
+            return cv
+        insert_version(cv_id, expected_version + 1, content, 'manual')
+        return get_cv(cv_id)

@@ -17,7 +17,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 03 Persistenza
 - [x] 04 API dei curriculum
 - [x] 05 Frontend iniziale
-- [ ] 06 Sezioni e modifica manuale
+- [x] 06 Sezioni e modifica manuale
 - [ ] 07 Versionamento
 - [ ] 08 Chat in modalità simulata
 - [ ] 09 Proposte e approvazione
@@ -40,3 +40,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **03** — Schema per CV e snapshot con SQLite indipendente. Riusati connessione, transazioni e fixture sintetica del riferimento. Verifica: Inizializzazione reale nel nuovo progetto, chiavi esterne, idempotenza e rollback. Prossimo passo: Operazioni dell’archivio e validazione.
 - **04** — CRUD con archivio persistente, versione iniziale e esempio idempotente. Riusate le query e i limiti del riferimento. Verifica: Creazione, riavvio, rinomina, cancellazione, input e ID invalidi. Prossimo passo: Archivio React e proxy Vite.
 - **05** — Archivio React con Fetch, creazione, apertura, rinomina e cancellazione. Riusati la vista archivio e i controlli condivisi. Verifica: Build Vite e creazione/riapertura in Chrome attraverso le porte 5174 e 5001. Prossimo passo: Modifica e ordinamento delle sezioni.
+- **06** — Editor delle sezioni con ID stabili, riordino e salvataggio atomico. Riusati il controllo di versione e il salvataggio del riferimento. Verifica: sette test backend, build Vite e modifica, riordino e rimozione in Chrome con database temporaneo. Prossimo passo: cronologia e ripristino.

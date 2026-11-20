@@ -44,4 +44,7 @@ export const api = {
   create: body => request('/cvs', { method: 'POST', body }),
   rename: (id, title) => request('/cvs/' + id, { method: 'PATCH', body: { title } }),
   remove: id => request('/cvs/' + id, { method: 'DELETE' }),
+  save: (id, content, version) => request('/cvs/' + id + '/content', {
+    method: 'PUT', body: { content, expected_version: version },
+  }),
 }
