@@ -1,6 +1,9 @@
+import math
+import os
 from pathlib import Path
 import sqlite3
 
+from dotenv import dotenv_values
 from flask import Flask, jsonify, request
 from werkzeug.exceptions import HTTPException
 
@@ -13,14 +16,30 @@ ROOT = Path(__file__).resolve().parent
 
 def create_app(test_config: dict | None = None) -> Flask:
     app = Flask(__name__, instance_path=str(ROOT / 'instance'))
+    local_settings = dotenv_values(ROOT / '.env')
+    settings = {**local_settings, **os.environ}
     app.config.from_mapping(
         DATABASE=str(Path(app.instance_path) / 'cv_copilot.sqlite3'),
-        LLM_MODE='mock',
+        LLM_MODE=settings.get('LLM_MODE', 'mock'),
+        OPENROUTER_API_KEY=(settings.get('OPENROUTER_API_KEY') or '').strip(),
+        OPENROUTER_DEFAULT_MODEL=(settings.get('OPENROUTER_DEFAULT_MODEL') or '').strip(),
+        LLM_TIMEOUT=settings.get('LLM_TIMEOUT', 20),
+        LLM_MAX_TOKENS=settings.get('LLM_MAX_TOKENS', 1600),
         MAX_CONTENT_LENGTH=512 * 1024,
         TRUSTED_HOSTS=['localhost', '127.0.0.1', '[::1]'],
     )
     if test_config is not None:
         app.config.update(test_config)
+    if app.config['LLM_MODE'] not in {'mock', 'openrouter'}:
+        raise ValueError('Imposta LLM_MODE a mock oppure openrouter in backend/.env.')
+    try:
+        timeout = float(app.config['LLM_TIMEOUT'])
+        max_tokens = int(app.config['LLM_MAX_TOKENS'])
+    except (ValueError, TypeError) as error:
+        raise ValueError('Controlla LLM_TIMEOUT e LLM_MAX_TOKENS in backend/.env.') from error
+    if not math.isfinite(timeout) or timeout <= 0 or max_tokens <= 0:
+        raise ValueError('LLM_TIMEOUT e LLM_MAX_TOKENS devono essere valori positivi.')
+    app.config.update(LLM_TIMEOUT=timeout, LLM_MAX_TOKENS=max_tokens)
     app.json.ensure_ascii = False
     app.teardown_appcontext(db.close_db)
     app.cli.add_command(db.init_db_command)
@@ -133,7 +152,8 @@ def register_routes(app: Flask) -> None:
 
     @app.get('/api/config')
     def get_config():
-        return {'llm_mode': 'mock', 'llm_configured': True, 'limits': {
+        mode = app.config['LLM_MODE']
+        return {'llm_mode': mode, 'llm_configured': mode == 'mock' or bool(app.config['OPENROUTER_API_KEY']), 'limits': {
             'title': validation.MAX_TITLE,
             'sections': validation.MAX_SECTIONS,
             'section_title': validation.MAX_SECTION_TITLE,

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { api } from '../api.js'
 import { Notice } from '../components/common.jsx'
 
-export default function ReviewView({ cv, limits, documentBusy, onReviewSaved }) {
+export default function ReviewView({ cv, limits, mode, documentBusy, onReviewSaved }) {
   const live = useRef(false)
   const [resolving, setResolving] = useState(false)
   const [chat, setChat] = useState(null)
@@ -68,7 +68,7 @@ export default function ReviewView({ cv, limits, documentBusy, onReviewSaved }) 
 
   return <section className="review-stage" aria-label="Revisione AI">
     <h2>Revisione AI</h2>
-    <p className="small muted">Demo · risposte simulate</p>
+    <p className="small muted">{mode === 'mock' ? 'Demo · risposte simulate' : 'OpenRouter'}</p>
     {error && <Notice kind="error">{error}</Notice>}
     {chat?.messages.map(item => {
       const proposal = chat.proposals.find(candidate => candidate.message_id === item.id)
