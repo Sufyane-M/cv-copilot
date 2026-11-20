@@ -13,7 +13,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 ## Fasi
 
 - [x] 01 Fondamenta
-- [ ] 02 Backend essenziale
+- [x] 02 Backend essenziale
 - [ ] 03 Persistenza
 - [ ] 04 API dei curriculum
 - [ ] 05 Frontend iniziale
@@ -36,3 +36,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 ## Registro
 
 - **01 Fondamenta** — Cartella separata, branch main, esclusioni, configurazione mock e piano. Verificati identità Git, contenuto iniziale indicizzato e porte locali 5001 e 5174. Prossima fase: avvio Flask e risposte JSON.
+- **02** — Factory Flask, controllo /api/health e risposte JSON. Riutilizzati i gestori HTTP del riferimento. Verifica: Due test su avvio, 404 JSON e protezione Origin. Prossimo passo: SQLite, schema e dati sintetici.

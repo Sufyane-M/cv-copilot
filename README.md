@@ -7,3 +7,13 @@ Questa è una ricostruzione assistita da Codex a partire da un progetto di rifer
 Lo sviluppo usa Flask sulla porta 5001 e Vite sulla 5174. Il nuovo ambiente e il nuovo database saranno creati in questa cartella. La configurazione di esempio seleziona la modalità mock.
 
 [Roadmap e registro delle verifiche](docs/ROADMAP.md)
+
+## Avvio del backend
+
+Dalla radice del progetto, in PowerShell.
+
+    py -3.13 -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+    .\.venv\Scripts\python.exe -m flask --app backend.app run --host 127.0.0.1 --port 5001
+
+Il controllo di avvio è disponibile in `GET /api/health`. Il repository locale segue `main` su GitHub.
