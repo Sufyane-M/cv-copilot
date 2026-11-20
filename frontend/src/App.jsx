@@ -1,15 +1,11 @@
-import PdfPreview, { useCvPdf, pdfFilename } from './components/PdfPreview.jsx'
+import DocumentPanel from './document/DocumentPanel.jsx'
 import ReviewView from './views/ReviewView.jsx'
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
 import { Notice } from './components/common.jsx'
 import CvListView from './views/CvListView.jsx'
-import ManualEditor from './views/ManualEditor.jsx'
 import HistoryView from './views/HistoryView.jsx'
 import WorkspaceDialog from './components/WorkspaceDialog.jsx'
-import TemplateGallery from './document/TemplateGallery.jsx'
-import { getTemplate } from './document/CvDocument.mjs'
-import { applyTemplate } from './document/templateSample.mjs'
 import './history.css'
 
 export default function App() {
@@ -52,14 +48,8 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
   const [content, setContent] = useState(cv.content)
   const [busy, setBusy] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
-  const [showTemplates, setShowTemplates] = useState(false)
   const [error, setError] = useState(null)
   const dirty = JSON.stringify(content) !== JSON.stringify(cv.content)
-  const pdf = useCvPdf(cv, dirty ? content : null, pane === 'pdf')
-  const filename = pdfFilename(cv.title, dirty)
-  const valid = content.sections.every(section => section.title.trim())
-    && (content.document_title === undefined || Boolean(content.document_title.trim()))
-
   async function runDocumentChange(request) {
     if (busy) return false
     setBusy(true)
@@ -77,9 +67,8 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
     }
   }
 
-  function save(event) {
-    event.preventDefault()
-    if (dirty && valid) void runDocumentChange(() => api.save(cv.id, content, cv.version_number))
+  function save() {
+    if (dirty) void runDocumentChange(() => api.save(cv.id, content, cv.version_number))
   }
 
   async function restore(number) {
@@ -112,35 +101,10 @@ function SelectedCv({ cv, setCv, limits, mode, configured, onClose }) {
       </div>
     </div>
     {!showHistory && notice}
-    <div className="actions">
-      <button type="button" className="button" aria-pressed={pane === 'edit'} onClick={() => setPane('edit')}>Modifica</button>
-      <button type="button" className="button" aria-pressed={pane === 'pdf'} onClick={() => setPane('pdf')}>Anteprima PDF</button>
-      <button type="button" className="button" disabled={busy} aria-expanded={showTemplates}
-        onClick={() => setShowTemplates(true)}>Template</button>
-      <button type="submit" form="cv-content-form" className="button button-primary" disabled={busy || !dirty || !valid}>
-        {busy ? 'Salvataggio…' : 'Salva'}
-      </button>
-      {dirty && pane === 'edit' && <span className="muted small">Modifiche non salvate</span>}
-      {pane === 'pdf' && <>
-        <button type="button" className="button" onClick={pdf.refresh}>Aggiorna anteprima</button>
-        {pdf.url && <a className="button" href={pdf.url} download={filename}>Scarica PDF</a>}
-        <span className="muted small">{dirty ? 'Bozza non salvata' : 'Versione salvata'}</span>
-      </>}
-    </div>
-    {pane === 'pdf' && <PdfPreview pdf={pdf} filename={filename} draft={dirty} />}
-    <form id="cv-content-form" hidden={pane !== 'edit'} onSubmit={save}>
-      <ManualEditor content={content} limits={limits} onChange={setContent} busy={busy} />
-    </form>
+    <DocumentPanel cv={cv} mode={pane} onMode={setPane} content={content} limits={limits}
+      busy={busy} dirty={dirty} onChange={setContent} onSave={save} />
     <ReviewView key={cv.id} cv={cv} limits={limits} mode={mode} configured={configured} documentBusy={busy || dirty}
       onReviewSaved={current => { setCv(current); setContent(current.content) }} />
-    {showTemplates && <TemplateGallery selectedId={getTemplate(content.design?.templateId).id}
-      empty={content.sections.length === 0} onClose={() => setShowTemplates(false)}
-      onSelect={(template, portrait) => {
-        setContent(applyTemplate(content, template, portrait))
-        setPane('pdf')
-        pdf.refresh()
-        setShowTemplates(false)
-      }} />}
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
     </WorkspaceDialog>}

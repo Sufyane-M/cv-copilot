@@ -26,7 +26,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 12 Documento e PDF
 - [x] 13 Presentazione negli snapshot
 - [x] 14 Famiglie e galleria dei template
-- [ ] 15 Editing direttamente sul documento
+- [x] 15 Editing direttamente sul documento
 - [ ] 16 Personalizzazione e riquadri
 - [ ] 17 Bozza e Undo/Redo
 - [ ] 18 Coordinamento fra editor e AI
@@ -49,3 +49,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **12** — Documento condiviso e PDF A4 con Chromium, inclusa anteprima di una bozza senza salvataggio. Riusati renderer React e font con licenza. Verifica: PDF effettivi con testo estraibile, accenti, elenchi e più pagine. Test su versioni, approvazione, anteprima e build. Prossimo passo: Presentazione immutabile nello snapshot.
 - **13** — Presentazione nel JSON degli snapshot, con Classic Roma come unico preset. Riusata la validazione del riferimento e preservata la compatibilità con i documenti senza design. Verifica: 55 test Flask, compresi salvataggio, ripristino, valori respinti e accettazione AI che conserva lo stile. Build Vite riuscita. Prossimo passo: Famiglie e galleria.
 - **14** — Galleria di 24 preset in sei famiglie. Riusati configurazioni, composizioni, miniature del renderer e dati dimostrativi del riferimento. La scelta su un CV vuoto prepara una bozza; sui CV già compilati applica lo stile. Verifica: 56 test Flask, due test Node e build Vite. In Chrome a 1440 e 390 px verificati filtri, ritratto, anteprima PDF di bozza senza scritture, salvataggio e cambio di template con contenuto invariato. Prossimo passo: Editing sul documento.
+- **15** — Titoli, testo multilinea, dettagli e foto modificabili direttamente sulla pagina A4. Riusati il componente del documento e il ridimensionamento preventivo delle immagini del riferimento. Verifica in Chrome con database isolato del focus, delle righe, dei caratteri accentati e della persistenza degli ID. Build Vite. Prossimo passo: Personalizzazione e dimensioni dei riquadri.
