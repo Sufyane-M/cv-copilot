@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 
-from . import validation
+from . import llm, validation
 from .db import get_db, transaction
 from .validation import ApiError
 
@@ -134,3 +134,34 @@ def restore_version(cv_id: int, number: int, expected_version: int) -> dict:
             raise ApiError('invalid_restore', 'Scegli una versione precedente da ripristinare.')
         insert_version(cv_id, expected_version + 1, version['content'], 'restore', number)
         return get_cv(cv_id)
+
+def find_section(content: dict, section_id: str) -> dict | None:
+    return next((section for section in content['sections'] if section['id'] == section_id), None)
+
+def get_chat(cv_id: int) -> dict:
+    with transaction(get_db()):
+        cv = get_cv(cv_id)
+        messages = [dict(row) for row in get_db().execute(
+            'SELECT * FROM message WHERE cv_id = ? ORDER BY id', (cv_id,),
+        )]
+        return {'messages': messages, 'proposals': [], 'version_number': cv['version_number']}
+
+
+def request_review(cv_id: int, revision: dict, _config: dict) -> dict:
+    connection = get_db()
+    base = revision['expected_version']
+    section_id = revision['section_id']
+    with transaction(connection, write=True):
+        cv = get_cv(cv_id)
+        require_expected_version(cv, base)
+        section = find_section(cv['content'], section_id)
+        if section is None:
+            raise ApiError('section_not_found', 'Seleziona una sezione presente nel CV corrente.', 404)
+        connection.executemany(
+            'INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id, job_posting) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [
+                (cv_id, 'user', revision['message'], timestamp(), base, section_id, revision['job_posting']),
+                (cv_id, 'assistant', llm.mock_reply(section), timestamp(), base, section_id, None),
+            ],
+        )
+    return get_chat(cv_id)

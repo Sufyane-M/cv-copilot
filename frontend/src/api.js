@@ -52,4 +52,6 @@ export const api = {
   restore: (id, number, version) => request('/cvs/' + id + '/versions/' + number + '/restore', {
     method: 'POST', body: { expected_version: version },
   }),
+  chat: (id, signal) => request('/cvs/' + id + '/chat', { signal }),
+  sendReview: (id, body) => request('/cvs/' + id + '/chat', { method: 'POST', body }),
 }

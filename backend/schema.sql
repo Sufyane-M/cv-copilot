@@ -20,3 +20,18 @@ CREATE TABLE IF NOT EXISTS cv_version (
         OR (origin <> 'restore' AND restored_from_number IS NULL)
     )
 );
+
+CREATE TABLE IF NOT EXISTS message (
+    id INTEGER PRIMARY KEY,
+    cv_id INTEGER NOT NULL REFERENCES cv(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    base_version_number INTEGER NOT NULL,
+    section_id TEXT NOT NULL,
+    job_posting TEXT,
+    UNIQUE (cv_id, id, base_version_number, section_id),
+    FOREIGN KEY (cv_id, base_version_number) REFERENCES cv_version(cv_id, number)
+);
+
+CREATE INDEX IF NOT EXISTS message_by_cv ON message(cv_id, id);

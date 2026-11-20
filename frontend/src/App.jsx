@@ -1,3 +1,4 @@
+import ReviewView from './views/ReviewView.jsx'
 import { useEffect, useState } from 'react'
 import { api } from './api.js'
 import { Notice } from './components/common.jsx'
@@ -112,6 +113,7 @@ function SelectedCv({ cv, setCv, limits, onClose }) {
         {dirty && <span className="muted small">Modifiche non salvate</span>}
       </div>
     </form>
+    <ReviewView key={cv.id} cv={cv} limits={limits} />
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
     </WorkspaceDialog>}

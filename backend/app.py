@@ -137,6 +137,26 @@ def register_routes(app: Flask) -> None:
             'sections': validation.MAX_SECTIONS,
             'section_title': validation.MAX_SECTION_TITLE,
             'section_text': validation.MAX_SECTION_TEXT,
+            'message': validation.MAX_MESSAGE,
+            'job_posting': validation.MAX_JOB_POSTING,
             'section_subtitle': validation.MAX_SECTION_SUBTITLE,
             'section_period': validation.MAX_SECTION_PERIOD,
         }}
+
+    @app.get('/api/cvs/<int:cv_id>/chat')
+    def read_chat(cv_id):
+        return cv_service.get_chat(cv_id)
+
+    @app.post('/api/cvs/<int:cv_id>/chat')
+    def request_review(cv_id):
+        payload = body({'message', 'section_id', 'expected_version'}, {'job_posting'})
+        posting = payload.get('job_posting')
+        if posting is not None:
+            posting = validation.string(posting, 'L’annuncio', validation.MAX_JOB_POSTING, allow_empty=True).strip() or None
+        revision = {
+            'message': validation.string(payload['message'], 'Il messaggio', validation.MAX_MESSAGE).strip(),
+            'section_id': validation.section_id(payload['section_id']),
+            'expected_version': validation.version_number(payload['expected_version']),
+            'job_posting': posting,
+        }
+        return cv_service.request_review(cv_id, revision, app.config), 201

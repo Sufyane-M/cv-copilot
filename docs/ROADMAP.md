@@ -19,7 +19,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 05 Frontend iniziale
 - [x] 06 Sezioni e modifica manuale
 - [x] 07 Versionamento
-- [ ] 08 Chat in modalità simulata
+- [x] 08 Chat in modalità simulata
 - [ ] 09 Proposte e approvazione
 - [ ] 10 OpenRouter
 - [ ] 11 Scelta del modello
@@ -42,3 +42,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **05** — Archivio React con Fetch, creazione, apertura, rinomina e cancellazione. Riusati la vista archivio e i controlli condivisi. Verifica: Build Vite e creazione/riapertura in Chrome attraverso le porte 5174 e 5001. Prossimo passo: Modifica e ordinamento delle sezioni.
 - **06** — Editor delle sezioni con ID stabili, riordino e salvataggio atomico. Riusati il controllo di versione e il salvataggio del riferimento. Verifica: sette test backend, build Vite e modifica, riordino e rimozione in Chrome con database temporaneo. Prossimo passo: cronologia e ripristino.
 - **07** — Cronologia confrontabile e ripristino con nuova versione. Riusati il dialogo e il servizio degli snapshot. Verifica: nove test backend, inclusi conflitti e immutabilità, build Vite e confronto e ripristino in Chrome con database temporaneo. Prossimo passo: chat in modalità simulata.
+- **08** — Chat simulata persistente con selezione della sezione e annuncio facoltativo. Verifica: Test Flask di invio, persistenza e annuncio senza rete. Build Vite. Prossimo passo: Proposte strutturate e approvazione.

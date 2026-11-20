@@ -166,3 +166,7 @@ fieldset { min-width: 0; }
 .library-item-title h2 { margin-bottom: .1rem; font-size: 1rem; overflow-wrap: anywhere; }
 .library-rename { flex: 1 1 100%; }
 .library-rename .rename-form { display: grid; gap: .5rem; }
+
+.review-stage { display: grid; gap: .55rem; margin-top: 1rem; border: 1px solid var(--line); border-radius: .6rem; padding: 1rem; background: var(--surface); }
+.review-stage form { display: grid; gap: .55rem; }
+.review-stage article > p { white-space: pre-wrap; }
