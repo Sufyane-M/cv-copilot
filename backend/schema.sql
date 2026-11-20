@@ -34,4 +34,29 @@ CREATE TABLE IF NOT EXISTS message (
     FOREIGN KEY (cv_id, base_version_number) REFERENCES cv_version(cv_id, number)
 );
 
+CREATE TABLE IF NOT EXISTS proposal (
+    id INTEGER PRIMARY KEY,
+    cv_id INTEGER NOT NULL REFERENCES cv(id) ON DELETE CASCADE,
+    message_id INTEGER NOT NULL UNIQUE,
+    base_version_number INTEGER NOT NULL,
+    section_id TEXT NOT NULL,
+    new_text TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+    created_at TEXT NOT NULL,
+    resolved_at TEXT,
+    applied_version_number INTEGER,
+    FOREIGN KEY (cv_id, message_id, base_version_number, section_id)
+        REFERENCES message(cv_id, id, base_version_number, section_id) ON DELETE CASCADE,
+    FOREIGN KEY (cv_id, base_version_number) REFERENCES cv_version(cv_id, number),
+    FOREIGN KEY (cv_id, applied_version_number) REFERENCES cv_version(cv_id, number),
+    CHECK (
+        (status = 'pending' AND resolved_at IS NULL AND applied_version_number IS NULL)
+        OR (status = 'accepted' AND resolved_at IS NOT NULL
+            AND applied_version_number IS NOT NULL AND applied_version_number = base_version_number + 1)
+        OR (status = 'rejected' AND resolved_at IS NOT NULL AND applied_version_number IS NULL)
+    )
+);
+
 CREATE INDEX IF NOT EXISTS message_by_cv ON message(cv_id, id);
+CREATE INDEX IF NOT EXISTS proposal_by_cv ON proposal(cv_id, id);

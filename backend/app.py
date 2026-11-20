@@ -15,6 +15,7 @@ def create_app(test_config: dict | None = None) -> Flask:
     app = Flask(__name__, instance_path=str(ROOT / 'instance'))
     app.config.from_mapping(
         DATABASE=str(Path(app.instance_path) / 'cv_copilot.sqlite3'),
+        LLM_MODE='mock',
         MAX_CONTENT_LENGTH=512 * 1024,
         TRUSTED_HOSTS=['localhost', '127.0.0.1', '[::1]'],
     )
@@ -160,3 +161,12 @@ def register_routes(app: Flask) -> None:
             'job_posting': posting,
         }
         return cv_service.request_review(cv_id, revision, app.config), 201
+
+    @app.post('/api/cvs/<int:cv_id>/proposals/<int:proposal_id>/accept')
+    def accept_proposal(cv_id, proposal_id):
+        return cv_service.resolve_proposal(cv_id, proposal_id, accept=True)
+
+
+    @app.post('/api/cvs/<int:cv_id>/proposals/<int:proposal_id>/reject')
+    def reject_proposal(cv_id, proposal_id):
+        return cv_service.resolve_proposal(cv_id, proposal_id, accept=False)

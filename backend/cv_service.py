@@ -8,6 +8,7 @@ from .validation import ApiError
 
 
 EXAMPLE_PATH = Path(__file__).with_name('example_cv.json')
+HISTORY_LIMIT = 8
 
 
 def timestamp() -> str:
@@ -135,33 +136,126 @@ def restore_version(cv_id: int, number: int, expected_version: int) -> dict:
         insert_version(cv_id, expected_version + 1, version['content'], 'restore', number)
         return get_cv(cv_id)
 
+
 def find_section(content: dict, section_id: str) -> dict | None:
     return next((section for section in content['sections'] if section['id'] == section_id), None)
 
+
 def get_chat(cv_id: int) -> dict:
-    with transaction(get_db()):
+    connection = get_db()
+    with transaction(connection):
         cv = get_cv(cv_id)
-        messages = [dict(row) for row in get_db().execute(
-            'SELECT * FROM message WHERE cv_id = ? ORDER BY id', (cv_id,),
-        )]
-        return {'messages': messages, 'proposals': [], 'version_number': cv['version_number']}
+        messages = [dict(row) for row in connection.execute('SELECT * FROM message WHERE cv_id = ? ORDER BY id', (cv_id,))]
+        proposals = [dict(row) for row in connection.execute('SELECT * FROM proposal WHERE cv_id = ? ORDER BY id', (cv_id,))]
+        contents = {cv['version_number']: cv['content']}
+        for message in messages:
+            base = message['base_version_number']
+            if base not in contents:
+                contents[base] = find_version(cv_id, base)['content']
+            section = find_section(contents[base], message['section_id'])
+            message['section_title'] = section['title']
+        for proposal in proposals:
+            base = proposal['base_version_number']
+            section = find_section(contents[base], proposal['section_id'])
+            proposal['section_title'] = section['title']
+            proposal['old_text'] = section['text']
+            proposal['obsolete'] = proposal['status'] == 'pending' and base != cv['version_number']
+        return {'messages': messages, 'proposals': proposals, 'version_number': cv['version_number']}
 
 
-def request_review(cv_id: int, revision: dict, _config: dict) -> dict:
+def recent_history(cv_id: int, current_version: int) -> list:
+    rows = get_db().execute('''
+        SELECT m.role, m.text, m.base_version_number, m.section_id, m.job_posting,
+               p.status, p.new_text, p.reason
+        FROM message AS m LEFT JOIN proposal AS p ON p.message_id = m.id
+        WHERE m.cv_id = ? ORDER BY m.id DESC LIMIT ?
+    ''', (cv_id, HISTORY_LIMIT)).fetchall()
+    history = []
+    for row in reversed(rows):
+        message = dict(row)
+        if message['status'] == 'pending' and message['base_version_number'] != current_version:
+            message['status'] = 'obsolete'
+        history.append(message)
+    return history
+
+
+def request_review(cv_id: int, revision: dict, config: dict) -> dict:
     connection = get_db()
     base = revision['expected_version']
     section_id = revision['section_id']
-    with transaction(connection, write=True):
+    mode = config['LLM_MODE']
+    requested_model_id = revision.get('model_id') if mode == 'openrouter' else None
+    with transaction(connection):
         cv = get_cv(cv_id)
         require_expected_version(cv, base)
         section = find_section(cv['content'], section_id)
         if section is None:
             raise ApiError('section_not_found', 'Seleziona una sezione presente nel CV corrente.', 404)
-        connection.executemany(
-            'INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id, job_posting) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [
-                (cv_id, 'user', revision['message'], timestamp(), base, section_id, revision['job_posting']),
-                (cv_id, 'assistant', llm.mock_reply(section), timestamp(), base, section_id, None),
-            ],
-        )
+        content = cv['content']
+        context = {
+            'base_version_number': base,
+            # Contatti, ritratto e design servono alla stampa, non alla revisione del testo.
+            'content': {field: content[field] for field in ('sections', 'document_title') if field in content},
+            'section': section,
+            'message': revision['message'],
+            'job_posting': revision['job_posting'],
+            'history': recent_history(cv_id, base),
+        }
+
+    if mode == 'openrouter':
+        context['model_id'] = requested_model_id
+    # La chiamata esterna avviene fuori dalla transazione. Restituisce solo una proposta.
+    result = validation.validate_review_result(llm.generate_review(config, context), section_id)
+    with transaction(connection, write=True):
+        get_cv(cv_id)
+        now = timestamp()
+        connection.execute('''
+            INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id, job_posting)
+            VALUES (?, 'user', ?, ?, ?, ?, ?)
+        ''', (cv_id, revision['message'], now, base, section_id, revision['job_posting']))
+        assistant = connection.execute('''
+            INSERT INTO message (cv_id, role, text, created_at, base_version_number, section_id)
+            VALUES (?, 'assistant', ?, ?, ?, ?)
+        ''', (cv_id, result['text'], now, base, section_id))
+        proposal = result['proposal']
+        if proposal is not None:
+            connection.execute('''
+                INSERT INTO proposal (cv_id, message_id, base_version_number, section_id, new_text, reason, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (cv_id, assistant.lastrowid, base, section_id, proposal['new_text'], proposal['reason'], now))
     return get_chat(cv_id)
+
+
+def resolve_proposal(cv_id: int, proposal_id: int, accept: bool) -> dict:
+    connection = get_db()
+    with transaction(connection, write=True):
+        proposal = connection.execute('''
+            SELECT p.*, m.section_id AS authorized_section_id, m.role AS message_role
+            FROM proposal AS p JOIN message AS m ON m.id = p.message_id AND m.cv_id = p.cv_id
+            WHERE p.id = ?
+        ''', (proposal_id,)).fetchone()
+        if proposal is None or proposal['cv_id'] != cv_id:
+            raise ApiError('proposal_not_found', 'La proposta non appartiene a questo CV.', 404)
+        if proposal['status'] != 'pending':
+            raise ApiError('proposal_already_resolved', 'La proposta è già stata risolta. Aggiorna la revisione.', 409)
+
+        cv = get_cv(proposal['cv_id'])
+        version = cv['version_number']
+        applied_version = None
+        status = 'rejected'
+        if accept:
+            if proposal['base_version_number'] != version:
+                raise ApiError('proposal_obsolete', 'La proposta è obsoleta. Richiedine una sulla versione corrente.', 409)
+            section = find_section(cv['content'], proposal['section_id'])
+            if section is None or proposal['section_id'] != proposal['authorized_section_id'] or proposal['message_role'] != 'assistant':
+                raise ApiError('invalid_proposal_section', 'La sezione della proposta non è autorizzata.', 409)
+
+            section['text'] = validation.proposal_text(proposal['new_text'])
+            applied_version = version + 1
+            insert_version(cv_id, applied_version, cv['content'], 'ai')
+            status = 'accepted'
+
+        connection.execute('''
+            UPDATE proposal SET status = ?, resolved_at = ?, applied_version_number = ? WHERE id = ?
+        ''', (status, timestamp(), applied_version, proposal_id))
+        return {'status': status, 'version_number': applied_version or version}

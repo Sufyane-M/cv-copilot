@@ -113,7 +113,8 @@ function SelectedCv({ cv, setCv, limits, onClose }) {
         {dirty && <span className="muted small">Modifiche non salvate</span>}
       </div>
     </form>
-    <ReviewView key={cv.id} cv={cv} limits={limits} />
+    <ReviewView key={cv.id} cv={cv} limits={limits} documentBusy={busy || dirty}
+      onReviewSaved={current => { setCv(current); setContent(current.content) }} />
     {showHistory && <WorkspaceDialog title="Cronologia" wide busy={busy} notice={notice} onClose={() => setShowHistory(false)}>
       <HistoryView cv={cv} busy={busy} onRestore={restore} />
     </WorkspaceDialog>}

@@ -1,9 +1,17 @@
-import { useEffect, useState } from 'react'
+import ProposalCard from '../components/ProposalCard.jsx'
+import '../chat.css'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api.js'
 import { Notice } from '../components/common.jsx'
 
-export default function ReviewView({ cv, limits }) {
+export default function ReviewView({ cv, limits, documentBusy, onReviewSaved }) {
+  const live = useRef(false)
+  const [resolving, setResolving] = useState(false)
   const [chat, setChat] = useState(null)
+  useEffect(() => {
+    live.current = true
+    return () => { live.current = false }
+  }, [])
   const [sectionId, setSectionId] = useState('')
   const [message, setMessage] = useState('')
   const [jobPosting, setJobPosting] = useState('')
@@ -41,13 +49,35 @@ export default function ReviewView({ cv, limits }) {
     }
   }
 
+  async function resolve(proposalId, decision) {
+    if (documentBusy || resolving) return
+    setResolving(true)
+    setError('')
+    try {
+      await api.resolveProposal(cv.id, proposalId, decision)
+      const current = await api.cv(cv.id)
+      if (live.current) onReviewSaved(current)
+      const updated = await api.chat(cv.id)
+      if (live.current) setChat(updated)
+    } catch (failure) {
+      if (live.current) setError(failure.message)
+    } finally {
+      if (live.current) setResolving(false)
+    }
+  }
+
   return <section className="review-stage" aria-label="Revisione AI">
     <h2>Revisione AI</h2>
     <p className="small muted">Demo · risposte simulate</p>
     {error && <Notice kind="error">{error}</Notice>}
-    {chat?.messages.map(item => <article key={item.id}>
-      <strong>{item.role === 'user' ? 'Tu' : 'Copilot'}</strong><p>{item.text}</p>
-    </article>)}
+    {chat?.messages.map(item => {
+      const proposal = chat.proposals.find(candidate => candidate.message_id === item.id)
+      return <article key={item.id}>
+        <strong>{item.role === 'user' ? 'Tu' : 'Copilot'}</strong><p>{item.text}</p>
+        {proposal && <ProposalCard proposal={proposal} reply={item.text}
+          disabled={documentBusy || resolving} onResolve={resolve} />}
+      </article>
+    })}
     {section ? <form onSubmit={submit}>
       <label>Sezione da revisionare
         <select value={section.id} disabled={sending} onChange={event => setSectionId(event.target.value)}>

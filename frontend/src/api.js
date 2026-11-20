@@ -54,4 +54,5 @@ export const api = {
   }),
   chat: (id, signal) => request('/cvs/' + id + '/chat', { signal }),
   sendReview: (id, body) => request('/cvs/' + id + '/chat', { method: 'POST', body }),
+  resolveProposal: (id, proposalId, action) => request('/cvs/' + id + '/proposals/' + proposalId + '/' + action, { method: 'POST' }),
 }

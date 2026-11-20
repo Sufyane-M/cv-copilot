@@ -20,7 +20,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 06 Sezioni e modifica manuale
 - [x] 07 Versionamento
 - [x] 08 Chat in modalità simulata
-- [ ] 09 Proposte e approvazione
+- [x] 09 Proposte e approvazione
 - [ ] 10 OpenRouter
 - [ ] 11 Scelta del modello
 - [ ] 12 Documento e PDF
@@ -43,3 +43,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **06** — Editor delle sezioni con ID stabili, riordino e salvataggio atomico. Riusati il controllo di versione e il salvataggio del riferimento. Verifica: sette test backend, build Vite e modifica, riordino e rimozione in Chrome con database temporaneo. Prossimo passo: cronologia e ripristino.
 - **07** — Cronologia confrontabile e ripristino con nuova versione. Riusati il dialogo e il servizio degli snapshot. Verifica: nove test backend, inclusi conflitti e immutabilità, build Vite e confronto e ripristino in Chrome con database temporaneo. Prossimo passo: chat in modalità simulata.
 - **08** — Chat simulata persistente con selezione della sezione e annuncio facoltativo. Verifica: Test Flask di invio, persistenza e annuncio senza rete. Build Vite. Prossimo passo: Proposte strutturate e approvazione.
+- **09** — Proposte con motivazione, confronto, approvazione e rifiuto. Riusata la transazione di accettazione del riferimento. Verifica: Test di concorrenza, rollback, obsolescenza, autorizzazione della sezione, duplicati e build. Prossimo passo: Adattatore OpenRouter e risposte di errore.

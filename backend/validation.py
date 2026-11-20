@@ -2,6 +2,9 @@ import re
 
 
 MAX_TITLE = 100
+MAX_REASON = 600
+MAX_ASSISTANT_TEXT = 2000
+MAX_MODEL_ID = 256
 MAX_MESSAGE = 1000
 MAX_JOB_POSTING = 4000
 MAX_SECTIONS = 16
@@ -89,3 +92,36 @@ def content(value) -> dict:
     if 'document_title' in value:
         result['document_title'] = string(value['document_title'], 'Il titolo del documento', MAX_TITLE).strip()
     return result
+
+def model_id(value) -> str:
+    return string(value, 'L’identificativo del modello', MAX_MODEL_ID).strip()
+
+
+def proposal_text(value) -> str:
+    return string(value, 'Il testo proposto', MAX_SECTION_TEXT)
+
+
+def validate_review_result(result, selected_id: str) -> dict:
+    try:
+        fields(result, {'text', 'proposal'}, {'actual_model_id'})
+        actual_model_id = result.get('actual_model_id')
+        if actual_model_id is not None:
+            actual_model_id = model_id(actual_model_id)
+        text = string(result['text'], 'La risposta AI', MAX_ASSISTANT_TEXT, allow_empty=True).strip()
+        proposal = result['proposal']
+        if proposal is None:
+            if not text:
+                raise ApiError('invalid_input', 'La risposta AI è vuota.')
+        else:
+            fields(proposal, {'section_id', 'new_text', 'reason'})
+            if section_id(proposal['section_id']) != selected_id:
+                raise ApiError('invalid_input', 'La sezione proposta è diversa da quella selezionata.')
+            proposal = {
+                'section_id': selected_id,
+                'new_text': proposal_text(proposal['new_text']),
+                'reason': string(proposal['reason'], 'La motivazione', MAX_REASON).strip(),
+            }
+            text = text or 'Proposta pronta per la revisione.'
+    except ApiError as error:
+        raise ApiError('invalid_ai_response', str(error), 502) from error
+    return {'text': text, 'proposal': proposal, 'actual_model_id': actual_model_id}
