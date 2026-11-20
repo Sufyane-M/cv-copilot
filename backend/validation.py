@@ -2,6 +2,8 @@ import base64
 import binascii
 import re
 
+from .design import normalize_design
+
 
 
 MAX_TITLE = 100
@@ -116,7 +118,7 @@ def document_profile(value) -> dict:
 
 
 def content(value) -> dict:
-    fields(value, {'sections'}, {'document_title', 'profile'})
+    fields(value, {'sections'}, {'document_title', 'profile', 'design'})
     sections = value['sections']
     if not isinstance(sections, list) or len(sections) > MAX_SECTIONS:
         raise ApiError('invalid_input', f'Il CV può contenere al massimo {MAX_SECTIONS} sezioni.')
@@ -148,6 +150,11 @@ def content(value) -> dict:
         result['document_title'] = string(value['document_title'], 'Il titolo del documento', MAX_TITLE).strip()
     if 'profile' in value:
         result['profile'] = document_profile(value['profile'])
+    if 'design' in value:
+        try:
+            result['design'] = normalize_design(value['design'], seen_ids)
+        except ValueError as error:
+            raise ApiError('invalid_input', str(error)) from error
     return result
 
 

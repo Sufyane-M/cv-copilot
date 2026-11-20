@@ -15,6 +15,16 @@ export default function ManualEditor({ content, limits, onChange, busy }) {
     onChange({ ...content, sections: reordered })
   }
 
+  function removeSection(id) {
+    const updated = { ...content, sections: sections.filter(section => section.id !== id) }
+    if (Object.hasOwn(content.design?.blocks ?? {}, id)) {
+      const blocks = { ...content.design.blocks }
+      delete blocks[id]
+      updated.design = { ...content.design, blocks }
+    }
+    onChange(updated)
+  }
+
   return <fieldset className="manual-editor" disabled={busy}>
     <legend>Sezioni del documento</legend>
     <label>Titolo del documento
@@ -43,7 +53,7 @@ export default function ManualEditor({ content, limits, onChange, busy }) {
         <button type="button" className="button button-small" disabled={index === 0} onClick={() => move(index, -1)}>Sposta su</button>
         <button type="button" className="button button-small" disabled={index === sections.length - 1} onClick={() => move(index, 1)}>Sposta giù</button>
         <button type="button" className="button button-small button-danger"
-          onClick={() => onChange({ ...content, sections: sections.filter(item => item.id !== section.id) })}>Rimuovi sezione</button>
+          onClick={() => removeSection(section.id)}>Rimuovi sezione</button>
       </div>
     </fieldset>)}
     <div><button type="button" className="button" disabled={sections.length >= limits.sections}

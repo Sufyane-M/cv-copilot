@@ -24,7 +24,7 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - [x] 10 OpenRouter
 - [x] 11 Scelta del modello
 - [x] 12 Documento e PDF
-- [ ] 13 Presentazione negli snapshot
+- [x] 13 Presentazione negli snapshot
 - [ ] 14 Famiglie e galleria dei template
 - [ ] 15 Editing direttamente sul documento
 - [ ] 16 Personalizzazione e riquadri
@@ -47,3 +47,4 @@ Il riferimento è stato letto in sola lettura. Gli incrementi documentano il riu
 - **10** — Adattatore HTTPX con tool calling, parsing controllato e errori in italiano. Riusato il contratto OpenRouter del riferimento. Verifica: Test HTTPX simulati sul payload, chiarimenti ed errori del provider. Suite Flask e build Vite. Prossimo passo: Catalogo e selezione del modello.
 - **11** — Catalogo dei modelli compatibili, cache, selettore, ultima scelta e attribuzione persistita. Riusati il catalogo, la migrazione idempotente e il selettore. Verifica: Suite per catalogo, trasporto HTTPX, attribuzione e migrazione di conversazioni esistenti. Build Vite. Prossimo passo: Rendering condiviso e PDF.
 - **12** — Documento condiviso e PDF A4 con Chromium, inclusa anteprima di una bozza senza salvataggio. Riusati renderer React e font con licenza. Verifica: PDF effettivi con testo estraibile, accenti, elenchi e più pagine. Test su versioni, approvazione, anteprima e build. Prossimo passo: Presentazione immutabile nello snapshot.
+- **13** — Presentazione nel JSON degli snapshot, con Classic Roma come unico preset. Riusata la validazione del riferimento e preservata la compatibilità con i documenti senza design. Verifica: 55 test Flask, compresi salvataggio, ripristino, valori respinti e accettazione AI che conserva lo stile. Build Vite riuscita. Prossimo passo: Famiglie e galleria.
